@@ -2,7 +2,7 @@ package connection
 
 import (
 	"fmt"
-	"leave-back/config"
+	"leave-back/shared/config"
 	"log"
 
 	"gorm.io/driver/postgres"
