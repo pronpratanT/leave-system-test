@@ -2,10 +2,12 @@ package main
 
 import (
 	"leave-back/internal/handler"
-	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	http.HandleFunc("/api/leave", handler.LeaveHandler)
-	http.ListenAndServe(":8080", nil)
+	r := gin.Default()
+	r.GET("/api/leave", handler.LeaveHandler)
+	r.Run(":8080")
 }
