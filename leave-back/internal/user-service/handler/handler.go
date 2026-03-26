@@ -19,4 +19,6 @@ func UserRoutes(r *gin.RouterGroup, h *UserHandler) {
 	r.POST("/signin", h.SignIn)
 	//middleware.JWTAuthMiddleware(),
 	r.GET("/leave-balances/:userID", h.GetLeaveBalancesByUserID)
+	r.GET("/departments", h.GetAllDepartments)
+	r.POST("/departments", h.CreateDepartment)
 }

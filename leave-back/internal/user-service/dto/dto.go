@@ -23,3 +23,7 @@ type CreateLeaveBalance struct {
 	LeaveTypeID int `json:"leave_type_id"`
 	Balance     int `json:"balance"`
 }
+
+type CreateDepartment struct {
+	Name string `json:"name" binding:"required"`
+}
