@@ -7,3 +7,8 @@ type CreateRequest struct {
 	EndDate     string `json:"end_date" binding:"required"`
 	Reason      string `json:"reason" binding:"required"`
 }
+
+type CreateLeaveType struct {
+	Name  string `json:"name" binding:"required"`
+	Quota int    `json:"quota" binding:"required"`
+}
