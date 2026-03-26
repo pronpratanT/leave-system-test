@@ -46,5 +46,7 @@ func (r *RequestRepository) RejectedRequest(requestID int, managerID int, commen
 }
 
 func (r *RequestRepository) CancelledRequest(requestID int) error {
-	return r.DB.Model(&model.Requests{}).Where("id = ?", requestID).Update("status", "cancelled").Error
+	return r.DB.Model(&model.Requests{}).
+		Where("id = ? AND status = ?", requestID, "pending").
+		Update("status", "cancelled").Error
 }
