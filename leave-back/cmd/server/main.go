@@ -13,6 +13,7 @@ import (
 
 	config "leave-back/shared/config"
 	db "leave-back/shared/connection"
+	"leave-back/shared/middleware"
 
 	"github.com/gin-gonic/gin"
 )
@@ -23,14 +24,16 @@ func main() {
 	appDB := db.ConnectDB()
 
 	usrRepo := usrrepo.NewUserRepository(appDB)
-	usrService := usrservice.NewUserService(usrRepo)
+	reqRepo := reqrepo.NewRequestRepository(appDB)
+
+	usrService := usrservice.NewUserService(usrRepo, reqRepo)
 	usrHandler := usrhandler.NewUserHandler(usrService)
 
-	reqRepo := reqrepo.NewRequestRepository(appDB)
 	reqService := reqservice.NewRequestService(reqRepo)
 	reqHandler := reqhandler.NewRequestHandler(reqService)
 
 	r := gin.Default()
+	r.Use(middleware.CORSMiddleware())
 	usrrouter.UserRouter(r, usrHandler)
 	reqrouter.RequestRouter(r, reqHandler)
 

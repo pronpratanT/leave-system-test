@@ -17,3 +17,9 @@ type SignInResponse struct {
 	UserName string `json:"username"`
 	Token    string `json:"token"`
 }
+
+type CreateLeaveBalance struct {
+	UserID      int `json:"user_id"`
+	LeaveTypeID int `json:"leave_type_id"`
+	Balance     int `json:"balance"`
+}

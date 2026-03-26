@@ -5,7 +5,7 @@ import (
 	"leave-back/shared/model"
 )
 
-func (r *UserRepository) SignUp(user *dto.SignUpRequest) error {
+func (r *UserRepository) SignUp(user *dto.SignUpRequest) (int, error) {
 	data := model.Users{
 		UserName:   user.UserName,
 		Password:   user.Password,
@@ -13,7 +13,8 @@ func (r *UserRepository) SignUp(user *dto.SignUpRequest) error {
 		Role:       user.Role,
 		Department: user.Department,
 	}
-	return r.DB.Create(&data).Error
+	err := r.DB.Create(&data).Error
+	return data.ID, err
 }
 
 func (r *UserRepository) CheckDuplicateUsername(username string) (bool, error) {

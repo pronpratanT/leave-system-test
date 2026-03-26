@@ -23,7 +23,27 @@ func (s *UserService) SignUp(user *dto.SignUpRequest) error {
 	}
 	user.Password = string(hashPassword)
 
-	return s.AppRepo.SignUp(user)
+	userID, err := s.AppRepo.SignUp(user)
+	if err != nil {
+		return err
+	}
+
+	leaveTypes, err := s.ReqRepo.GetAllLeaveTypes()
+	if err != nil {
+		return err
+	}
+
+	for _, types := range leaveTypes {
+		balance := dto.CreateLeaveBalance{
+			UserID:      userID,
+			LeaveTypeID: types.ID,
+			Balance:     types.Quota,
+		}
+		if err := s.AppRepo.CreateLeaveBalanceByUserID(balance); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (s *UserService) SignIn(req *dto.SignInRequest) (*dto.SignInResponse, error) {
