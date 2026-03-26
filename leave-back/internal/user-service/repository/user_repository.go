@@ -1,11 +1,34 @@
 package repository
 
-import "gorm.io/gorm"
+import (
+	"leave-back/internal/user-service/dto"
+	"leave-back/shared/model"
+)
 
-type UserRepository struct {
-	DB *gorm.DB
+func (r *UserRepository) SignUp(user *dto.SignUpRequest) error {
+	data := model.Users{
+		UserName:   user.UserName,
+		Password:   user.Password,
+		Name:       user.Name,
+		Role:       user.Role,
+		Department: user.Department,
+	}
+	return r.DB.Create(&data).Error
 }
 
-func NewUserRepository(db *gorm.DB) *UserRepository {
-	return &UserRepository{DB: db}
+func (r *UserRepository) CheckDuplicateUsername(username string) (bool, error) {
+	var count int64
+	err := r.DB.Model(&model.Users{}).
+		Where("username = ?", username).
+		Count(&count).Error
+	return count > 0, err
+}
+
+func (r *UserRepository) SignIn(username string) (*model.Users, error) {
+	var data model.Users
+	err := r.DB.Where("username = ?", username).First(&data).Error
+	if err != nil {
+		return nil, err
+	}
+	return &data, nil
 }
