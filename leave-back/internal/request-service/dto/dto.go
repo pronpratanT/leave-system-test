@@ -12,3 +12,8 @@ type CreateLeaveType struct {
 	Name  string `json:"name" binding:"required"`
 	Quota int    `json:"quota" binding:"required"`
 }
+
+type CreateHolidays struct {
+	Date string `json:"date" binding:"required"`
+	Name string `json:"name" binding:"required"`
+}

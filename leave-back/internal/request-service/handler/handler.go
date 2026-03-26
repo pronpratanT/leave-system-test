@@ -15,5 +15,8 @@ func NewRequestHandler(s *service.RequestService) *RequestHandler {
 }
 
 func RequestRoutes(r *gin.RouterGroup, h *RequestHandler) {
-
+	r.GET("/leave-types", h.GetAllLeaveTypes)
+	r.POST("/leave-types", h.CreateLeaveTypes)
+	r.GET("/holidays", h.GetAllHolidays)
+	r.POST("/holidays", h.CreateHoliday)
 }
