@@ -14,6 +14,7 @@ import (
 	config "leave-back/shared/config"
 	db "leave-back/shared/connection"
 	"leave-back/shared/middleware"
+	"leave-back/shared/migrate"
 
 	"github.com/gin-gonic/gin"
 )
@@ -22,6 +23,10 @@ func main() {
 	config.LoadConfig()
 
 	appDB := db.ConnectDB()
+
+	if err := migrate.AutoMigrate(); err != nil {
+		panic("Database migration failed: " + err.Error())
+	}
 
 	usrRepo := usrrepo.NewUserRepository(appDB)
 	reqRepo := reqrepo.NewRequestRepository(appDB)
