@@ -19,9 +19,9 @@ type SignInResponse struct {
 }
 
 type CreateLeaveBalance struct {
-	UserID      int `json:"user_id"`
-	LeaveTypeID int `json:"leave_type_id"`
-	Balance     int `json:"balance"`
+	UserID      int     `json:"user_id"`
+	LeaveTypeID int     `json:"leave_type_id"`
+	Balance     float64 `json:"balance"`
 }
 
 type CreateDepartment struct {
