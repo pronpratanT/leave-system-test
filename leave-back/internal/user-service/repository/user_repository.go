@@ -33,3 +33,9 @@ func (r *UserRepository) SignIn(username string) (*model.Users, error) {
 	}
 	return &data, nil
 }
+
+func (r *UserRepository) GetUserByID(userID int) (*model.Users, error) {
+	var user model.Users
+	err := r.DB.Where("id = ?", userID).First(&user).Error
+	return &user, err
+}

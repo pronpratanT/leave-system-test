@@ -117,3 +117,42 @@ func (s *RequestService) calculateLeaveDays(startDate, endDate time.Time, halfDa
 
 	return totalDays, nil
 }
+
+func (s *RequestService) ApprovedRequest(requestID int, managerID int, comment string) error {
+	chkmanager, err := s.UsrRepo.GetUserByID(managerID)
+	if err != nil {
+		return err
+	}
+	if chkmanager.Role != "manager" {
+		return errors.New("you are not authorized to approve this request")
+	}
+	return s.AppRepo.ApprovedRequest(requestID, managerID, comment)
+}
+
+func (s *RequestService) RejectedRequest(requestID int, managerID int, comment string) error {
+	chkmanager, err := s.UsrRepo.GetUserByID(managerID)
+	if err != nil {
+		return err
+	}
+	if chkmanager.Role != "manager" {
+		return errors.New("you are not authorized to reject this request")
+	}
+	return s.AppRepo.RejectedRequest(requestID, managerID, comment)
+}
+
+func (s *RequestService) CancelledRequest(requestID int, userID int) error {
+	req, err := s.AppRepo.GetRequestByID(requestID)
+	if err != nil {
+		return err
+	}
+	if req.UserID != userID {
+		return errors.New("you are not authorized to cancel this request")
+	}
+	if req.Status != "pending" {
+		return errors.New("you can only cancel pending requests")
+	}
+	if err := s.AppRepo.CancelledRequest(requestID); err != nil {
+		return err
+	}
+	return s.UsrRepo.RestoreLeaveBalance(req.UserID, req.LeaveTypeID, req.TotalDay)
+}
