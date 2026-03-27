@@ -21,3 +21,16 @@ func (r *RequestRepository) CreateHoliday(holidays []dto.CreateHolidays) error {
 	}
 	return r.DB.Create(&models).Error
 }
+
+func (r *RequestRepository) GetHolidayDatesBetween(startDate, endDate string) (map[string]bool, error) {
+	var holidays []model.Holidays
+	err := r.DB.Where("date >= ? AND date <= ?", startDate, endDate).Find(&holidays).Error
+	if err != nil {
+		return nil, err
+	}
+	holidayMap := make(map[string]bool)
+	for _, h := range holidays {
+		holidayMap[h.Date] = true
+	}
+	return holidayMap, nil
+}

@@ -29,5 +29,8 @@ func (s *RequestService) CreateRequest(request dto.CreateRequest) error {
 		return err
 	}
 
-	
+	holidayMap, err := s.AppRepo.GetHolidayDatesBetween(request.StartDate, request.EndDate)
+	if err != nil {
+		return err
+	}
 }
