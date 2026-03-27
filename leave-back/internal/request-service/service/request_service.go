@@ -60,8 +60,26 @@ func (s *RequestService) CreateRequest(request dto.CreateRequest) error {
 		return fmt.Errorf("insufficient leave balance: remaining %.1f days, requested %.1f days", currentBalance, totalDays)
 	}
 
-	if err := s.UsrRepo
-	
+	if err := s.UsrRepo.DeductLeaveBalance(request.UserID, request.LeaveTypeID, totalDays); err != nil {
+		return fmt.Errorf("failed to deduct leave balance: %w", err)
+	}
+
+	req := &model.Requests{
+		UserID: request.UserID,
+		LeaveTypeID: request.LeaveTypeID,
+		HalfDay: request.HalfDay,
+		StartDate: request.StartDate,
+		EndDate: request.EndDate,
+		TotalDay: totalDays,
+		Reason: request.Reason,
+		Status: "pending",
+	}
+
+	if err := s.AppRepo.CreateRequest(req); err != nil {
+		_ = s.UsrRepo.RestoreLeaveBalance(request.UserID, request.LeaveTypeID, totalDays)
+		return fmt.Errorf("failed to create leave request: %w", err)
+	}
+	return nil
 }
 
 func (s *RequestService) calculateLeaveDays(startDate, endDate time.Time, halfDay bool, holidayMap map[string]bool) (float64, error) {

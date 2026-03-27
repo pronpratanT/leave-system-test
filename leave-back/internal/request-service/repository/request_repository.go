@@ -1,20 +1,11 @@
 package repository
 
 import (
-	"leave-back/internal/request-service/dto"
 	"leave-back/shared/model"
 )
 
-func (r *RequestRepository) CreateRequest(request *dto.CreateRequest) error {
-	req := &model.Requests{
-		UserID:      request.UserID,
-		LeaveTypeID: request.LeaveTypeID,
-		StartDate:   request.StartDate,
-		EndDate:     request.EndDate,
-		Reason:      request.Reason,
-		Status:      "pending",
-	}
-	return r.DB.Create(&req).Error
+func (r *RequestRepository) CreateRequest(request *model.Requests) error {
+	return r.DB.Create(&request).Error
 }
 
 func (r *RequestRepository) GetRequestsByUserID(userID int) ([]model.Requests, error) {
