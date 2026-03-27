@@ -3,6 +3,8 @@ package repository
 import (
 	"leave-back/internal/user-service/dto"
 	"leave-back/shared/model"
+
+	"gorm.io/gorm"
 )
 
 func (r *UserRepository) GetLeaveBalancesByUserID(userID int) ([]model.LeaveBalances, error) {

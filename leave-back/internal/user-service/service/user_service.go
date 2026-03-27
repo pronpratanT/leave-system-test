@@ -4,6 +4,7 @@ import (
 	"errors"
 	"leave-back/internal/user-service/dto"
 	"leave-back/shared/auth"
+	"leave-back/shared/model"
 
 	"golang.org/x/crypto/bcrypt"
 )

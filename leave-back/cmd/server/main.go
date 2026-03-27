@@ -29,7 +29,7 @@ func main() {
 	usrService := usrservice.NewUserService(usrRepo, reqRepo)
 	usrHandler := usrhandler.NewUserHandler(usrService)
 
-	reqService := reqservice.NewRequestService(reqRepo)
+	reqService := reqservice.NewRequestService(reqRepo, usrRepo)
 	reqHandler := reqhandler.NewRequestHandler(reqService)
 
 	r := gin.Default()

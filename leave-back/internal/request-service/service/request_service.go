@@ -2,8 +2,13 @@ package service
 
 import (
 	"errors"
+	"fmt"
 	"leave-back/internal/request-service/dto"
+	"leave-back/shared/model"
+	"time"
 )
+
+const dateFormat = "2006-01-02"
 
 func (s *RequestService) CreateRequest(request dto.CreateRequest) error {
 	startDate, err := time.Parse(dateFormat, request.StartDate)
@@ -17,11 +22,6 @@ func (s *RequestService) CreateRequest(request dto.CreateRequest) error {
 
 	if endDate.Before(startDate) {
 		return errors.New("end date must not be before start date")
-	}
-	
-	reqData, err := s.AppRepo.GetRequestsByUserID(request.UserID)
-	if err != nil {
-		return err
 	}
 
 	usrBalance, err := s.UsrRepo.GetLeaveBalancesByUserID(request.UserID)
@@ -52,6 +52,7 @@ func (s *RequestService) CreateRequest(request dto.CreateRequest) error {
 		if b.LeaveTypeID == request.LeaveTypeID {
 			currentBalance = b.Balance
 			break
+		}
 	}
 	if currentBalance < 0 {
 		return errors.New("no leave balance found for this leave type")
@@ -65,14 +66,14 @@ func (s *RequestService) CreateRequest(request dto.CreateRequest) error {
 	}
 
 	req := &model.Requests{
-		UserID: request.UserID,
+		UserID:      request.UserID,
 		LeaveTypeID: request.LeaveTypeID,
-		HalfDay: request.HalfDay,
-		StartDate: request.StartDate,
-		EndDate: request.EndDate,
-		TotalDay: totalDays,
-		Reason: request.Reason,
-		Status: "pending",
+		HalfDay:     request.HalfDay,
+		StartDate:   request.StartDate,
+		EndDate:     request.EndDate,
+		TotalDay:    totalDays,
+		Reason:      request.Reason,
+		Status:      "pending",
 	}
 
 	if err := s.AppRepo.CreateRequest(req); err != nil {
