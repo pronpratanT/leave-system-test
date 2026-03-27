@@ -38,6 +38,30 @@ func (s *RequestService) CreateRequest(request dto.CreateRequest) error {
 	if err != nil {
 		return err
 	}
+
+	hasOverlap, err := s.AppRepo.CheckOverlappingRequests(request.UserID, request.StartDate, request.EndDate)
+	if err != nil {
+		return fmt.Errorf("failed to check overlapping requests: %w", err)
+	}
+	if hasOverlap {
+		return errors.New("you already have a leave request in the selected date range")
+	}
+
+	var currentBalance float64 = -1
+	for _, b := range usrBalance {
+		if b.LeaveTypeID == request.LeaveTypeID {
+			currentBalance = b.Balance
+			break
+	}
+	if currentBalance < 0 {
+		return errors.New("no leave balance found for this leave type")
+	}
+	if currentBalance < totalDays {
+		return fmt.Errorf("insufficient leave balance: remaining %.1f days, requested %.1f days", currentBalance, totalDays)
+	}
+
+	if err := s.UsrRepo
+	
 }
 
 func (s *RequestService) calculateLeaveDays(startDate, endDate time.Time, halfDay bool, holidayMap map[string]bool) (float64, error) {

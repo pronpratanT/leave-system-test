@@ -50,3 +50,12 @@ func (r *RequestRepository) CancelledRequest(requestID int) error {
 		Where("id = ? AND status = ?", requestID, "pending").
 		Update("status", "cancelled").Error
 }
+
+func (r *RequestRepository) CheckOverlappingRequests(userID int, startDate, endDate string) (bool, error) {
+	var count int64
+	err := r.DB.Model(&model.Requests{}).
+		Where("user_id = ? AND status IN (?, ?) AND start_date <= ? AND end_date >= ?",
+			userID, "pending", "approved", endDate, startDate).
+		Count(&count).Error
+	return count > 0, err
+}
