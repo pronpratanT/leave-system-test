@@ -14,6 +14,7 @@ type SignInRequest struct {
 }
 
 type SignInResponse struct {
+	UserID   int    `json:"user_id"`
 	UserName string `json:"username"`
 	Name     string `json:"name"`
 	Role	 string `json:"role"`
@@ -29,4 +30,9 @@ type CreateLeaveBalance struct {
 
 type CreateDepartment struct {
 	Name string `json:"name" binding:"required"`
+}
+
+type LeaveBalanceResponse struct {
+	LeaveType string  `json:"leave_type"`
+	Balance   float64 `json:"balance"`
 }

@@ -65,6 +65,7 @@ func (s *UserService) SignIn(req *dto.SignInRequest) (*dto.SignInResponse, error
 		return nil, errors.New("Failed to get department")
 	}
 	return &dto.SignInResponse{
+		UserID: user.ID,
 		UserName: user.UserName,
 		Name: user.Name,
 		Role: user.Role,

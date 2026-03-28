@@ -39,6 +39,7 @@ function LoginPage() {
       }
       const data = await response.json();
       const user = data.data;
+      Cookies.set("user_id", user.user_id, { path: "/" });
       Cookies.set("token", user.token, { path: "/" });
       Cookies.set("username", user.username, { path: "/" });
       Cookies.set("role", user.role, { path: "/" });
