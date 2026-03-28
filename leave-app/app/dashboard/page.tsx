@@ -38,7 +38,7 @@ function DashboardPage() {
   }, []);
 
   useEffect(() => {
-    const getLeaveBalance = async () => {
+    const fetchLeaveBalance = async () => {
       try {
         const response = await fetch(
           `http://localhost:8080/api/users/leave-balances/${useID}`,
@@ -53,7 +53,24 @@ function DashboardPage() {
         return null;
       }
     };
-    getLeaveBalance();
+
+    const fetchLeaveRequests = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:8080/api/users/leave-requests/${useID}`,
+        );
+        if (!response.ok) {
+          throw new Error("Failed to fetch leave requests");
+        }
+          const data = await response.json();
+
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchLeaveBalance();
+    fetchLeaveRequests();
   }, [useID]);
 
   return (

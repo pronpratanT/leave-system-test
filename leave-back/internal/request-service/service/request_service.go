@@ -156,3 +156,11 @@ func (s *RequestService) CancelledRequest(requestID int, userID int) error {
 	}
 	return s.UsrRepo.RestoreLeaveBalance(req.UserID, req.LeaveTypeID, req.TotalDay)
 }
+
+func (s *RequestService) GetRequestsHistoryByUserID(userID int) ([]dto.RequestHistoryResponse, error) {
+	return s.AppRepo.GetRequestsHistoryByUserID(userID)
+}
+
+func (s *RequestService) GetRequestDetailByID(requestID int) (*dto.RequestDetailResponse, error) {
+	return s.AppRepo.GetRequestDetailByID(requestID)
+}

@@ -13,7 +13,10 @@ const RequestModal: React.FC<RequestModalProps> = ({ open, onClose, children }) 
   const [startHalfDayType, setStartHalfDayType] = useState("");
   const [endHalfDayType, setEndHalfDayType] = useState("");
   const [reason, setReason] = useState("");
-
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const handleSubmit = () => {
     // TODO: ส่งข้อมูลไป backend ตามรูปแบบใหม่
     // ตัวอย่าง payload
