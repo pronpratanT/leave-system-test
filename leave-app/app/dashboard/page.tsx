@@ -83,15 +83,15 @@ function DashboardPage() {
             </colgroup>
             <tbody>
               <tr>
-                <td className="py-3 px-2 border-b text-center">1</td>
-                <td className="py-3 px-2 border-b text-left">Sick Leave</td>
-                <td className="py-3 px-2 border-b text-center">2024-07-01</td>
-                <td className="py-3 px-2 border-b text-center">2024-07-03</td>
-                <td className="py-3 px-2 border-b text-center">3</td>
-                <td className="py-3 px-2 border-b text-left">
+                <td className="py-3 px-2 border-b text-center text-gray-500">1</td>
+                <td className="py-3 px-2 border-b text-left text-gray-500">Sick Leave</td>
+                <td className="py-3 px-2 border-b text-center text-gray-500">2024-07-01</td>
+                <td className="py-3 px-2 border-b text-center text-gray-500">2024-07-03</td>
+                <td className="py-3 px-2 border-b text-center text-gray-500">3</td>
+                <td className="py-3 px-2 border-b text-left text-gray-500">
                   ป่วย ไม่สบาย ไปเที่ยว ปลูกป่า
                 </td>
-                <td className="py-3 px-2 border-b text-center">Pending</td>
+                <td className="py-3 px-2 border-b text-center text-gray-500">Pending</td>
                 <td className="py-3 px-2 border-b flex items-center justify-center">
                   <button className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-700 ">
                     Approve

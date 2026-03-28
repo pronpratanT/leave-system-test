@@ -34,7 +34,7 @@ func (s *RequestService) CreateRequest(request dto.CreateRequest) error {
 		return err
 	}
 
-	totalDays, err := s.calculateLeaveDays(startDate, endDate, request.HalfDay, holidayMap)
+	totalDays, err := s.calculateLeaveDays(startDate, endDate, request.StartHalfDayType, request.EndHalfDayType, holidayMap)
 	if err != nil {
 		return err
 	}
@@ -68,7 +68,8 @@ func (s *RequestService) CreateRequest(request dto.CreateRequest) error {
 	req := &model.Requests{
 		UserID:      request.UserID,
 		LeaveTypeID: request.LeaveTypeID,
-		HalfDay:     request.HalfDay,
+		StartHalfDayType: request.StartHalfDayType,
+		EndHalfDayType:   request.EndHalfDayType,
 		StartDate:   request.StartDate,
 		EndDate:     request.EndDate,
 		TotalDay:    totalDays,
@@ -83,40 +84,38 @@ func (s *RequestService) CreateRequest(request dto.CreateRequest) error {
 	return nil
 }
 
-func (s *RequestService) calculateLeaveDays(startDate, endDate time.Time, halfDay bool, holidayMap map[string]bool) (float64, error) {
-	var totalDays float64
+func (s *RequestService) calculateLeaveDays(startDate, endDate time.Time, startHalfDayType, endHalfDayType string, holidayMap map[string]bool,) (float64, error) {
+    var totalDays float64
 
-	for d := startDate; !d.After(endDate); d = d.AddDate(0, 0, 1) {
-		// ข้ามวันเสาร์-อาทิตย์
-		if d.Weekday() == time.Saturday || d.Weekday() == time.Sunday {
-			continue
-		}
+    for d := startDate; !d.After(endDate); d = d.AddDate(0, 0, 1) {
+        if d.Weekday() == time.Saturday || d.Weekday() == time.Sunday {
+            continue
+        }
+        if holidayMap[d.Format(dateFormat)] {
+            continue
+        }
+        totalDays += 1.0
+    }
 
-		// ข้ามวันหยุดนักขัตฤกษ์
-		dateStr := d.Format(dateFormat)
-		if holidayMap[dateStr] {
-			continue
-		}
+    if totalDays == 0 {
+        return 0, errors.New("no working days in the selected date range")
+    }
 
-		// วันทำงานปกติ นับ 1 วัน
-		totalDays += 1.0
-	}
+    // หักครึ่งวันของวันแรก
+    if startHalfDayType != "" {
+        totalDays -= 0.5
+    }
 
-	if totalDays == 0 {
-		return 0, errors.New("no working days in the selected date range")
-	}
+    // หักครึ่งวันของวันสุดท้าย (กรณีลาหลายวัน และวันสุดท้ายไม่ใช่วันเดียวกับวันแรก)
+    if endHalfDayType != "" && !startDate.Equal(endDate) {
+        totalDays -= 0.5
+    }
 
-	// ถ้าเป็น half-day ลดลง 0.5 (ใช้ได้เมื่อลาวันเดียว)
-	if halfDay {
-		if startDate.Equal(endDate) {
-			totalDays = 0.5
-		} else {
-			// ลาหลายวันแบบ half-day → หักวันแรกเป็นครึ่งวัน
-			totalDays -= 0.5
-		}
-	}
+    if totalDays <= 0 {
+        return 0, errors.New("total leave days must be greater than 0")
+    }
 
-	return totalDays, nil
+    return totalDays, nil
 }
 
 func (s *RequestService) ApprovedRequest(requestID int, managerID int, comment string) error {

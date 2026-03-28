@@ -3,9 +3,10 @@ package dto
 type CreateRequest struct {
 	UserID      int    `json:"user_id" binding:"required"`
 	LeaveTypeID int    `json:"leave_type_id" binding:"required"`
-	HalfDay     bool   `json:"half_day" binding:"required"`
 	StartDate   string `json:"start_date" binding:"required"`
 	EndDate     string `json:"end_date" binding:"required"`
+	StartHalfDayType string `json:"start_half_day_type"` // "morning", "afternoon", or "" (none)
+	EndHalfDayType   string `json:"end_half_day_type"`   // "morning", "afternoon", or "" (none)
 	Reason      string `json:"reason" binding:"required"`
 }
 
