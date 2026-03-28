@@ -60,8 +60,15 @@ func (s *UserService) SignIn(req *dto.SignInRequest) (*dto.SignInResponse, error
 	if err != nil {
 		return nil, errors.New("Failed to generate token")
 	}
+	department, err := s.AppRepo.GetDepartmentByID(user.DepartmentID)
+	if err != nil {
+		return nil, errors.New("Failed to get department")
+	}
 	return &dto.SignInResponse{
 		UserName: user.UserName,
+		Name: user.Name,
+		Role: user.Role,
+		Department: department.Name,
 		Token:    token,
 	}, nil
 }

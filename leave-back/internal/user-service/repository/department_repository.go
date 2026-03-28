@@ -14,3 +14,9 @@ func (r *UserRepository) CreateDepartment(name string) error {
 	}
 	return r.DB.Create(&department).Error
 }
+
+func (r *UserRepository) GetDepartmentByID(departmentID int) (*model.Departments, error) {
+	var department model.Departments
+	err := r.DB.Where("id = ?", departmentID).First(&department).Error
+	return &department, err
+}

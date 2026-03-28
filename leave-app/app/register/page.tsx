@@ -177,7 +177,7 @@ function RegisterPage() {
             </p>
           )}
           <button
-            className="bg-blue-500 text-white px-4 py-2 rounded-md cursor-pointer hover:bg-blue-700 w-full disabled:opacity-50"
+            className="bg-blue-500 text-white px-4 py-2 rounded-md cursor-pointer hover:bg-blue-700 w-full disabled:opacity-50 disabled:cursor-not-allowed enabled:cursor-pointer"
             onClick={handleRegister}
             disabled={isSubmitting}
           >
