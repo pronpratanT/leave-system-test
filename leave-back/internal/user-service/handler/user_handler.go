@@ -17,7 +17,7 @@ func (h *UserHandler) SignUp(c *gin.Context) {
 	}
 	if err := h.Service.SignUp(&req); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to register user",
+			"error": err.Error(),
 		})
 		return
 	}
@@ -37,7 +37,7 @@ func (h *UserHandler) SignIn(c *gin.Context) {
 	resp, err := h.Service.SignIn(&req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to sign in user",
+			"error": err.Error(),
 		})
 		return
 	}

@@ -2,6 +2,7 @@ package repository
 
 import (
 	"leave-back/shared/model"
+	"leave-back/internal/request-service/dto"
 )
 
 func (r *RequestRepository) CreateRequest(request *model.Requests) error {
@@ -52,48 +53,22 @@ func (r *RequestRepository) CheckOverlappingRequests(userID int, startDate, endD
 }
 
 func (r *RequestRepository) GetRequestsHistoryByUserID(userID int) ([]dto.RequestHistoryResponse, error) {
-	var requests []model.Requests
-	err := r.DB.Where("user_id = ?", userID).Find(&requests).Error
-	if err != nil {
-		return nil, err
-	}
-
-	var response []dto.RequestHistoryResponse
-	for _, request := range requests {
-		response = append(response, dto.RequestHistoryResponse{
-			ID:          request.ID,
-			LeaveType:   request.LeaveType,
-			StartDate:   request.StartDate,
-			EndDate:     request.EndDate,
-			StartHalfDayType: request.StartHalfDayType,
-			EndHalfDayType:   request.EndHalfDayType,
-			TotalDay:    request.TotalDay,
-			Status:      request.Status,
-			Reason:      request.Reason,
-		})
-	}
-
-	return response, nil
+	var result []dto.RequestHistoryResponse
+	err := r.DB.Table("requests").
+		Select("requests.*, leave_types.name as leave_type").
+		Joins("LEFT JOIN leave_types ON leave_types.id = requests.leave_type_id").
+		Where("requests.user_id = ?", userID).
+		Scan(&result).Error
+	return result, err
 }
 
 func (r *RequestRepository) GetRequestDetailByID(requestID int) (*dto.RequestDetailResponse, error) {
-	var request model.Requests
-	err := r.DB.Where("id = ?", requestID).First(&request).Error
-	if err != nil {
-		return nil, err
-	}
-	return &dto.RequestDetailResponse{
-		ID:          request.ID,
-		LeaveType:   request.LeaveType,
-		StartDate:   request.StartDate,
-		EndDate:     request.EndDate,
-		StartHalfDayType: request.StartHalfDayType,
-		EndHalfDayType:   request.EndHalfDayType,
-		TotalDay:    request.TotalDay,
-		Status:      request.Status,
-		Reason:      request.Reason,
-		Comment:     request.Comment,
-		ManagerName: request.ManagerName,
-	}, nil
-
-})
+	var result dto.RequestDetailResponse
+	err := r.DB.Table("requests").
+		Select("requests.*, leave_types.name as leave_type, users.name as manager_name").
+		Joins("LEFT JOIN leave_types ON leave_types.id = requests.leave_type_id").
+		Joins("LEFT JOIN users ON users.id = requests.manager_id").
+		Where("requests.id = ?", requestID).
+		Scan(&result).Error
+	return &result, err
+}

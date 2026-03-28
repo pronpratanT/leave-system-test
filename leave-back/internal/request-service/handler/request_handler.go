@@ -1,5 +1,12 @@
 package handler
 
+import (
+	"net/http"
+	"strconv"
+	"leave-back/internal/request-service/dto"
+	"github.com/gin-gonic/gin"
+)
+
 func (h *RequestHandler) GetRequestsHistoryByUserID(c *gin.Context) {
 	userID, err := strconv.Atoi(c.Param("userID"))
 	if err != nil {
@@ -49,9 +56,9 @@ func (r *RequestHandler) CreateRequest(c *gin.Context) {
 		})
 		return
 	}
-	if err := h.Service.CreateRequest(req); err != nil {
+	if err := r.Service.CreateRequest(req); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to create request",
+			"error": err.Error(),
 		})
 		return
 	}
@@ -75,9 +82,9 @@ func (r *RequestHandler) CancelRequest(c *gin.Context) {
 		})
 		return
 	}
-	if err := h.Service.CancelRequest(requestID, userID); err != nil {
+	if err := r.Service.CancelledRequest(requestID, userID); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to cancel request",
+			"error": err.Error(),
 		})
 		return
 	}
@@ -102,9 +109,9 @@ func (r *RequestHandler) ApprovedRequest(c *gin.Context) {
 		return
 	}
 	comment := c.Query("comment")
-	if err := h.Service.ApprovedRequest(requestID, managerID, comment); err != nil {
+	if err := r.Service.ApprovedRequest(requestID, managerID, comment); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to approve request",
+			"error": err.Error(),
 		})
 		return
 	}
@@ -129,9 +136,9 @@ func (r *RequestHandler) RejectedRequest(c *gin.Context) {
 		return
 	}
 	comment := c.Query("comment")
-	if err := h.Service.RejectedRequest(requestID, managerID, comment); err != nil {
+	if err := r.Service.RejectedRequest(requestID, managerID, comment); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to reject request",
+			"error": err.Error(),
 		})
 		return
 	}

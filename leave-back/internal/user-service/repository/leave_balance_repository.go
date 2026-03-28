@@ -25,7 +25,7 @@ func (r *UserRepository) CreateLeaveBalanceByUserID(balanceDto dto.CreateLeaveBa
 func (r *UserRepository) DeductLeaveBalance(userID, leaveTypeID int, days float64) error {
 	return r.DB.Model(&model.LeaveBalances{}).
 		Where("user_id = ? AND leave_type_id = ?", userID, leaveTypeID).
-		Update("balance = balance - ?", days).Error
+		Update("balance", gorm.Expr("balance - ?", days)).Error
 }
 
 func (r *UserRepository) RestoreLeaveBalance(userID, leaveTypeID int, days float64) error {
