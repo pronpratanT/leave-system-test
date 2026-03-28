@@ -39,8 +39,8 @@ function LoginPage() {
     <main className="flex min-h-screen flex-col items-center justify-center p-24">
       <div className="z-10 w-full max-w-lg items-center justify-between font-mono text-sm lg:flex bg-white p-8 rounded-lg shadow-lg shadow-gray-400">
         <div className="flex flex-col items-center justify-center w-full gap-5">
-          <h1 className="text-2xl font-bold">Login</h1>
-          <p>
+          <h1 className="text-2xl font-bold text-gray-800">Login</h1>
+          <p className="text-gray-600">
             Don't have an account?{" "}
             <a href="/register" className="text-blue-500 hover:underline">
               Sign up
@@ -51,14 +51,14 @@ function LoginPage() {
             placeholder="Username"
             value={username}
             onChange={e => setUsername(e.target.value)}
-            className="border p-2 rounded-md w-full"
+            className="border p-2 rounded-md w-full text-gray-700"
           />
           <input
             type="password"
             placeholder="Password"
             value={password}
             onChange={e => setPassword(e.target.value)}
-            className="border p-2 rounded-md w-full"
+            className="border p-2 rounded-md w-full text-gray-700"
           />
           {error && (
             <p className="text-red-500 border border-red-500 rounded-md w-full p-2">

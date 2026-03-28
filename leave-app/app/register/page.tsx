@@ -56,27 +56,27 @@ function RegisterPage() {
     <main className="flex min-h-screen flex-col items-center justify-center p-24">
       <div className="z-10 w-full max-w-lg items-center justify-between font-mono text-sm lg:flex bg-white p-8 rounded-lg shadow-lg shadow-gray-400">
         <div className="flex flex-col items-center justify-center w-full gap-5">
-          <h1 className="text-2xl font-bold">Register</h1>
-          <p>
+          <h1 className="text-2xl font-bold text-gray-800">Register</h1>
+          <p className="text-gray-600">
             Already have an account?{" "}
             <a href="/login" className="text-blue-500 hover:underline">
               Login
             </a>
           </p>
           <div className="mb-2 w-full">
-            <h1 className="mb-2 text-md font-bold">Personal Information</h1>
+            <h1 className="mb-2 text-md font-bold text-gray-800">Personal Information</h1>
             <div className="grid grid-cols-2 gap-4">
               <input
                 type="text"
                 placeholder="Name"
                 onChange={(e) => setName(e.target.value)}
-                className="border p-2 rounded-md w-full col-span-2"
+                className="border p-2 rounded-md w-full col-span-2 text-gray-700"
               />
               <select
                 name="role"
                 id="role"
                 onChange={(e) => setRole(e.target.value)}
-                className="border p-2 rounded-md w-full"
+                className="border p-2 rounded-md w-full text-gray-700"
               >
                 <option value="">Select Role</option>
                 <option value="user">User</option>
@@ -86,7 +86,7 @@ function RegisterPage() {
                 name="department"
                 id="department"
                 onChange={(e) => setDepartment(e.target.value)}
-                className="border p-2 rounded-md w-full"
+                className="border p-2 rounded-md w-full text-gray-700"
                 value={department}
               >
                 <option value="">Select Department</option>
@@ -99,25 +99,25 @@ function RegisterPage() {
             </div>
           </div>
           <div className="mb-4 w-full">
-            <h1 className="mb-2 text-md font-bold">Account Information</h1>
+            <h1 className="mb-2 text-md font-bold text-gray-800">Account Information</h1>
             <div className="grid grid-cols-2 gap-4">
               <input
                 type="text"
                 placeholder="Username"
                 onChange={(e) => setUsername(e.target.value)}
-                className="border p-2 rounded-md w-full col-span-2"
+                className="border p-2 rounded-md w-full col-span-2 text-gray-700"
               />
               <input
                 type="password"
                 placeholder="Password"
                 onChange={(e) => setPassword(e.target.value)}
-                className="border p-2 rounded-md w-full"
+                className="border p-2 rounded-md w-full text-gray-700"
               />
               <input
                 type="password"
                 placeholder="Confirm Password"
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="border p-2 rounded-md w-full"
+                className="border p-2 rounded-md w-full text-gray-700"
               />
             </div>
           </div>
