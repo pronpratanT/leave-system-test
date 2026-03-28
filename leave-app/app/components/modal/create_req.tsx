@@ -123,7 +123,6 @@ const RequestModal: React.FC<RequestModalProps> = ({
         <h2 className="text-xl font-bold mb-4 text-gray-700">
           Create Leave Request
         </h2>
-        {children}
 
         {/* Leave Type */}
         <div className="mb-4">
