@@ -1,4 +1,5 @@
 "use client";
+import { useRouter } from "next/dist/client/components/navigation";
 import React, { useEffect } from "react";
 import { useState } from "react";
 
@@ -7,8 +8,9 @@ type Department = {
   name: string;
 };
 
-
 function RegisterPage() {
+  const router = useRouter();
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -16,12 +18,16 @@ function RegisterPage() {
   const [role, setRole] = useState("");
   const [department, setDepartment] = useState("");
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [departments, setDepartments] = useState<Department[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchDepartments = async () => {
       try {
-        const response = await fetch("http://localhost:3000/api/users/departments");
+        const response = await fetch(
+          "http://localhost:8080/api/users/departments",
+        );
         if (!response.ok) {
           throw new Error("Failed to fetch departments");
         }
@@ -34,23 +40,56 @@ function RegisterPage() {
     fetchDepartments();
   }, []);
 
-  const handleRegister = () => {
-    if (!username || !password || !confirmPassword || !name || !role || !department) {
+  const handleRegister = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    setError("");
+
+    if (
+      !username ||
+      !password ||
+      !confirmPassword ||
+      !name ||
+      !role ||
+      !department
+    ) {
       setError("Please fill in all fields");
+      setIsSubmitting(false); // reset เฉพาะ validation error
       return;
     }
     if (password !== confirmPassword) {
       setError("Passwords do not match");
+      setIsSubmitting(false); // reset เฉพาะ validation error
       return;
     }
+
     const payload = {
-      username: username,
-      password: password,
-      name: name,
-      role: role,
-      department: department,
+      username,
+      password,
+      name,
+      role,
+      department_id: Number(department),
     };
-    console.log("Registering user:", payload);
+
+    try {
+      const response = await fetch("http://localhost:8080/api/users/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!response.ok) {
+        throw new Error("Failed to register");
+      }
+      setSuccess("Registration successful!");
+      // ไม่ setIsSubmitting(false) → ปุ่มยังถูก disable จนกว่าจะ redirect
+      setTimeout(() => {
+        router.push("/login");
+      }, 2000);
+    } catch (error) {
+      console.error(error);
+      setError("An error occurred during registration");
+      setIsSubmitting(false); // reset เฉพาะกรณี error เท่านั้น
+    }
   };
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-24">
@@ -64,7 +103,9 @@ function RegisterPage() {
             </a>
           </p>
           <div className="mb-2 w-full">
-            <h1 className="mb-2 text-md font-bold text-gray-800">Personal Information</h1>
+            <h1 className="mb-2 text-md font-bold text-gray-800">
+              Personal Information
+            </h1>
             <div className="grid grid-cols-2 gap-4">
               <input
                 type="text"
@@ -90,16 +131,20 @@ function RegisterPage() {
                 value={department}
               >
                 <option value="">Select Department</option>
-                {departments && departments.length > 0 && departments.map((dept) => (
-                  <option key={dept.id} value={dept.name}>
-                    {dept.name}
-                  </option>
-                ))}
+                {departments &&
+                  departments.length > 0 &&
+                  departments.map((dept) => (
+                    <option key={dept.id} value={dept.id}>
+                      {dept.name}
+                    </option>
+                  ))}
               </select>
             </div>
           </div>
           <div className="mb-4 w-full">
-            <h1 className="mb-2 text-md font-bold text-gray-800">Account Information</h1>
+            <h1 className="mb-2 text-md font-bold text-gray-800">
+              Account Information
+            </h1>
             <div className="grid grid-cols-2 gap-4">
               <input
                 type="text"
@@ -126,11 +171,17 @@ function RegisterPage() {
               {error}
             </p>
           )}
+          {success && (
+            <p className="text-green-500 border border-green-500 rounded-md w-full p-2">
+              {success}
+            </p>
+          )}
           <button
-            className="bg-blue-500 text-white px-4 py-2 rounded-md cursor-pointer hover:bg-blue-700 w-full"
+            className="bg-blue-500 text-white px-4 py-2 rounded-md cursor-pointer hover:bg-blue-700 w-full disabled:opacity-50"
             onClick={handleRegister}
+            disabled={isSubmitting}
           >
-            Register
+            {isSubmitting ? "Registering..." : "Register"}
           </button>
         </div>
       </div>

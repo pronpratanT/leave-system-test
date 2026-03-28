@@ -4,6 +4,7 @@ import (
 	db "leave-back/shared/connection"
 	"leave-back/shared/model"
 	"log"
+	"gorm.io/gorm"
 )
 
 func AutoMigrate() error {

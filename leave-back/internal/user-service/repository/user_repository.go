@@ -6,13 +6,13 @@ import (
 )
 
 func (r *UserRepository) SignUp(user *dto.SignUpRequest) (int, error) {
-	data := model.Users{
-		UserName:   user.UserName,
-		Password:   user.Password,
-		Name:       user.Name,
-		Role:       user.Role,
-		Department: user.Department,
-	}
+	   data := model.Users{
+		   UserName:    user.UserName,
+		   Password:    user.Password,
+		   Name:        user.Name,
+		   Role:        user.Role,
+		   DepartmentID: user.DepartmentID,
+	   }
 	err := r.DB.Create(&data).Error
 	return data.ID, err
 }
