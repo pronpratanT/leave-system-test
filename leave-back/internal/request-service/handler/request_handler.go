@@ -68,21 +68,14 @@ func (r *RequestHandler) CreateRequest(c *gin.Context) {
 }
 
 func (r *RequestHandler) CancelRequest(c *gin.Context) {
-	requestID, err := strconv.Atoi(c.Param("requestID"))
-	if err != nil {
+	var req dto.CancelRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid request ID",
+			"error": "Invalid request body",
 		})
 		return
 	}
-	userID, err := strconv.Atoi(c.Query("userID"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid user ID",
-		})
-		return
-	}
-	if err := r.Service.CancelledRequest(requestID, userID); err != nil {
+	if err := r.Service.CancelledRequest(req); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
 		})
@@ -94,22 +87,14 @@ func (r *RequestHandler) CancelRequest(c *gin.Context) {
 }
 
 func (r *RequestHandler) ApprovedRequest(c *gin.Context) {
-	requestID, err := strconv.Atoi(c.Param("requestID"))
-	if err != nil {
+	var req dto.ApproveRejectRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid request ID",
+			"error": "Invalid request body",
 		})
 		return
 	}
-	managerID, err := strconv.Atoi(c.Query("managerID"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid manager ID",
-		})
-		return
-	}
-	comment := c.Query("comment")
-	if err := r.Service.ApprovedRequest(requestID, managerID, comment); err != nil {
+	if err := r.Service.ApprovedRequest(req); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
 		})
@@ -121,22 +106,14 @@ func (r *RequestHandler) ApprovedRequest(c *gin.Context) {
 }
 
 func (r *RequestHandler) RejectedRequest(c *gin.Context) {
-	requestID, err := strconv.Atoi(c.Param("requestID"))
-	if err != nil {
+	var req dto.ApproveRejectRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid request ID",
+			"error": "Invalid request body",
 		})
 		return
 	}
-	managerID, err := strconv.Atoi(c.Query("managerID"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid manager ID",
-		})
-		return
-	}
-	comment := c.Query("comment")
-	if err := r.Service.RejectedRequest(requestID, managerID, comment); err != nil {
+	if err := r.Service.RejectedRequest(req); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
 		})

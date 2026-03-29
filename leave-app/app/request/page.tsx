@@ -1,8 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/dist/client/components/navigation";
 import Cookies from "js-cookie";
-import { FaPlus } from "react-icons/fa";
-import RequestModal from "../components/modal/create_req";
 import ViewReqModal from "../components/modal/view_req";
 
 type LeaveRequest = {
@@ -19,13 +18,13 @@ type LeaveRequest = {
 };
 
 function RequestPage() {
-  const [userName, setUserName] = React.useState("");
+  const router = useRouter();
+
   const [useID, setUserID] = React.useState("");
   const [role, setRole] = React.useState("");
   const [department, setDepartment] = React.useState("");
   const [departmentID, setDepartmentID] = React.useState("");
   const [viewReqModal, setViewReqModal] = useState(false);
-  const [leaveBalances, setLeaveBalances] = React.useState([]);
   const [leaveRequests, setLeaveRequests] = React.useState<LeaveRequest[]>([]);
   const [selectedRequest, setSelectedRequest] = useState<LeaveRequest | null>(
     null,
@@ -33,13 +32,9 @@ function RequestPage() {
 
   useEffect(() => {
     const userID = Cookies.get("user_id");
-    const userName = Cookies.get("username");
     const role = Cookies.get("role");
     const department = Cookies.get("department");
     const departmentID = Cookies.get("department_id");
-    if (userName) {
-      setUserName(userName);
-    }
     if (userID) {
       setUserID(userID);
     }
@@ -55,23 +50,15 @@ function RequestPage() {
   }, []);
 
   useEffect(() => {
+    if (role !== "manager") {
+      alert("You do not have permission to access this page");
+      router.push("/dashboard");
+    }
+  }, [role]);
+
+  useEffect(() => {
     if (!useID) return; // Only fetch if useID is set
     if (!departmentID) return; // Only fetch if departmentID is set
-
-    const fetchLeaveBalance = async () => {
-      try {
-        const response = await fetch(
-          `http://localhost:8080/api/users/leave-balances/${useID}`,
-        );
-        if (!response.ok) {
-          throw new Error("Failed to fetch leave balance");
-        }
-        const data = await response.json();
-        setLeaveBalances(data.data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
 
     const fetchLeaveRequests = async () => {
       try {
@@ -88,14 +75,12 @@ function RequestPage() {
       }
     };
 
-    fetchLeaveBalance();
     fetchLeaveRequests();
   }, [useID, departmentID]);
 
   return (
     <>
       <main className="flex flex-col justify-center items-center min-h-screen bg-gray-100">
-        <h1 className="text-2xl font-bold mb-4 text-gray-700">คำขอใบลา</h1>
         {/* table header */}
         <div className="pl-5 pr-5 pt-5 w-full max-w-5xl bg-white rounded-t-lg shadow-lg shadow-gray-400">
           <div className="flex justify-between mb-6 items-center p-3">
@@ -213,19 +198,28 @@ function RequestPage() {
                         <span className="text-yellow-500 font-semibold border-yellow-500 border px-2 py-1 rounded-lg">
                           Pending
                         </span>
-                      ) : (
+                      ) : request.status === "rejected" ? (
                         <span className="text-red-500 font-semibold border-red-500 border px-2 py-1 rounded-lg">
                           Rejected
+                        </span>
+                      ) : (
+                        <span className="text-gray-500 font-semibold border-gray-500 border px-2 py-1 rounded-lg">
+                          Canceled
                         </span>
                       )}
                     </td>
                     <td className="py-3 px-2 flex items-center justify-center">
                       <button
-                        className="bg-sky-500 text-white px-4 py-2 rounded-md hover:bg-sky-700 cursor-pointer"
+                        className="bg-sky-500 text-white px-4 py-2 rounded-md hover:bg-sky-700 cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed"
                         onClick={() => {
                           setViewReqModal(true);
                           setSelectedRequest(request); // Set the selected request data
                         }}
+                        disabled={
+                          request.status === "approved" ||
+                          request.status === "rejected" ||
+                          request.status === "cancelled"
+                        }
                       >
                         Action
                       </button>
@@ -250,7 +244,7 @@ function RequestPage() {
         open={viewReqModal}
         onClose={() => setViewReqModal(false)}
         requestId={selectedRequest?.id || null} // Pass the selected request ID to the modal
-         fromRequestPage={true}
+        fromRequestPage={true}
       />
     </>
   );

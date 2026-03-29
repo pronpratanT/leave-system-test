@@ -1,6 +1,6 @@
 "use client";
 
-import React, { use, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FaPlus } from "react-icons/fa";
 import RequestModal from "../components/modal/create_req";
 import ViewReqModal from "../components/modal/view_req";
@@ -34,7 +34,7 @@ function DashboardPage() {
     null,
   );
   const [leaveBalances, setLeaveBalances] = useState<LeaveBalance[]>([]);
-  const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
+  const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[] | null>([]);
 
   useEffect(() => {
     const userID = Cookies.get("user_id");
@@ -55,49 +55,46 @@ function DashboardPage() {
     }
   }, []);
 
+  const fetchLeaveBalance = React.useCallback(async () => {
+    if (!useID) return;
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/users/leave-balances/${useID}`,
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch leave balance");
+      }
+      const data = await response.json();
+      setLeaveBalances(data.data);
+    } catch (error) {
+      console.error(error);
+    }
+  }, [useID]);
+
+  const fetchLeaveRequests = React.useCallback(async () => {
+    if (!useID) return;
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/requests/requests-history/${useID}`,
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch leave requests");
+      }
+      const data = await response.json();
+      setLeaveRequests(data.data);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  }, [useID]);
+
   useEffect(() => {
-    if (!useID) return; // Only fetch if useID is set
-
-    const fetchLeaveBalance = async () => {
-      try {
-        const response = await fetch(
-          `http://localhost:8080/api/users/leave-balances/${useID}`,
-        );
-        if (!response.ok) {
-          throw new Error("Failed to fetch leave balance");
-        }
-        const data = await response.json();
-        setLeaveBalances(data.data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    const fetchLeaveRequests = async () => {
-      try {
-        const response = await fetch(
-          `http://localhost:8080/api/requests/requests-history/${useID}`,
-        );
-        if (!response.ok) {
-          throw new Error("Failed to fetch leave requests");
-        }
-        const data = await response.json();
-        setLeaveRequests(data.data);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-
     fetchLeaveBalance();
     fetchLeaveRequests();
-  }, [useID]);
+  }, [fetchLeaveBalance, fetchLeaveRequests]);
 
   return (
     <>
-      <main className="flex flex-col items-center justify-center p-24">
-        <div className="mb-4">
-          <h1 className="text-2xl font-bold">Dashboard</h1>
-        </div>
+      <main className="flex flex-col items-center justify-center p-24 bg-gray-100 min-h-screen">
         {/* user info */}
         <div className="mb-6 w-full max-w-5xl bg-white rounded-lg shadow-lg shadow-gray-400 p-5">
           <h2 className="text-xl font-semibold text-gray-700 mb-4">
@@ -195,8 +192,8 @@ function DashboardPage() {
               <col style={{ width: "120px" }} />
             </colgroup>
             <tbody>
-              {leaveRequests.length > 0 ? (
-                leaveRequests.map((request, index) => (
+              {(leaveRequests?.length ?? 0) > 0 ? (
+                (leaveRequests ?? []).map((request, index) => (
                   <tr key={request.id} className="border-b border-gray-200">
                     <td className="py-3 px-2 text-center text-gray-500">
                       {index + 1}
@@ -237,9 +234,13 @@ function DashboardPage() {
                         <span className="text-yellow-500 font-semibold border-yellow-500 border px-2 py-1 rounded-lg">
                           Pending
                         </span>
-                      ) : (
+                      ) : request.status === "rejected" ? (
                         <span className="text-red-500 font-semibold border-red-500 border px-2 py-1 rounded-lg">
                           Rejected
+                        </span>
+                      ) : (
+                        <span className="text-gray-500 font-semibold border-gray-500 border px-2 py-1 rounded-lg">
+                          Canceled
                         </span>
                       )}
                     </td>
@@ -272,12 +273,21 @@ function DashboardPage() {
       </main>
       <RequestModal
         open={requestModal}
-        onClose={() => setRequestModal(false)}
+        onClose={() => {
+          setRequestModal(false);
+          fetchLeaveRequests();
+          fetchLeaveBalance();
+        }}
       />
       <ViewReqModal
         open={viewReqModal}
-        onClose={() => setViewReqModal(false)}
+        onClose={() => {
+          setViewReqModal(false)
+          fetchLeaveRequests();
+          fetchLeaveBalance();
+        }}
         requestId={selectedRequest?.id || null} // Pass the selected request ID to the modal
+        fromDashboardPage={true}
       />
     </>
   );

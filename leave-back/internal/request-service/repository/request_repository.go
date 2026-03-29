@@ -21,19 +21,19 @@ func (r *RequestRepository) GetRequestByID(requestID int) (*model.Requests, erro
 	return &request, err
 }
 
-func (r *RequestRepository) ApprovedRequest(requestID int, managerID int, comment string) error {
-	return r.DB.Model(&model.Requests{}).Where("id = ?", requestID).Updates(map[string]interface{}{
+func (r *RequestRepository) ApprovedRequest(request dto.ApproveRejectRequest) error {
+	return r.DB.Model(&model.Requests{}).Where("id = ?", request.RequestID).Updates(map[string]interface{}{
 		"status":     "approved",
-		"manager_id": managerID,
-		"comment":    comment,
+		"manager_id": request.ManagerID,
+		"comment":    request.Comment,
 	}).Error
 }
 
-func (r *RequestRepository) RejectedRequest(requestID int, managerID int, comment string) error {
-	return r.DB.Model(&model.Requests{}).Where("id = ?", requestID).Updates(map[string]interface{}{
+func (r *RequestRepository) RejectedRequest(request dto.ApproveRejectRequest) error {
+	return r.DB.Model(&model.Requests{}).Where("id = ?", request.RequestID).Updates(map[string]interface{}{
 		"status":     "rejected",
-		"manager_id": managerID,
-		"comment":    comment,
+		"manager_id": request.ManagerID,
+		"comment":    request.Comment,
 	}).Error
 }
 

@@ -94,7 +94,9 @@ const RequestModal: React.FC<RequestModalProps> = ({
       }
       setSuccess("Leave request submitted successfully");
       setIsSubmitting(false);
-      onClose();
+      setTimeout(() => {
+        onClose();
+      }, 2000);
     } catch (error) {
       console.error(error);
       setError("Failed to submit leave request");

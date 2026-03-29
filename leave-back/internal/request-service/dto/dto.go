@@ -58,3 +58,14 @@ type RequestDepartmentHistoryResponse struct {
 	Reason      string `json:"reason"`
 	Name		string `json:"name"`
 }
+
+type ApproveRejectRequest struct {
+	RequestID int    `json:"request_id" binding:"required"`
+	ManagerID int    `json:"manager_id" binding:"required"`
+	Comment   string `json:"comment"`
+}
+
+type CancelRequest struct {
+	RequestID int `json:"request_id" binding:"required"`
+	UserID    int `json:"user_id" binding:"required"`
+}
