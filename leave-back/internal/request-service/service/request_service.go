@@ -34,6 +34,20 @@ func (s *RequestService) CreateRequest(request dto.CreateRequest) error {
 		return err
 	}
 
+	if startDate.Weekday() == time.Saturday || startDate.Weekday() == time.Sunday {
+    return errors.New("start date cannot be a weekend")
+	}
+	if holidayMap[request.StartDate] {
+		return errors.New("start date cannot be a public holiday")
+	}
+
+	if endDate.Weekday() == time.Saturday || endDate.Weekday() == time.Sunday {
+		return errors.New("end date cannot be a weekend")
+	}
+	if holidayMap[request.EndDate] {
+		return errors.New("end date cannot be a public holiday")
+	}
+
 	totalDays, err := s.calculateLeaveDays(startDate, endDate, request.StartHalfDayType, request.EndHalfDayType, holidayMap)
 	if err != nil {
 		return err
