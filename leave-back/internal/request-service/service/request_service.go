@@ -164,3 +164,7 @@ func (s *RequestService) GetRequestsHistoryByUserID(userID int) ([]dto.RequestHi
 func (s *RequestService) GetRequestDetailByID(requestID int) (*dto.RequestDetailResponse, error) {
 	return s.AppRepo.GetRequestDetailByID(requestID)
 }
+
+func (s *RequestService) GetAllLeaveRequestsByUserDepartmentID(departmentID int) ([]dto.RequestDepartmentHistoryResponse, error) {
+	return s.AppRepo.GetAllLeaveRequestsByUserDepartmentID(departmentID)
+}

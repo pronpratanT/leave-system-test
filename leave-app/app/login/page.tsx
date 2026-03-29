@@ -45,6 +45,7 @@ function LoginPage() {
       Cookies.set("role", user.role, { path: "/" });
       Cookies.set("department", user.department, { path: "/" });
       Cookies.set("name", user.name, { path: "/" });
+      Cookies.set("department_id", user.department_id, { path: "/" });
       setSuccess("Login successful!");
       setTimeout(() => {
         router.push("/dashboard");

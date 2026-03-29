@@ -1,15 +1,9 @@
 "use client";
-
-import React, { use, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import Cookies from "js-cookie";
 import { FaPlus } from "react-icons/fa";
 import RequestModal from "../components/modal/create_req";
 import ViewReqModal from "../components/modal/view_req";
-import Cookies from "js-cookie";
-
-type LeaveBalance = {
-  leave_type: string;
-  balance: number;
-};
 
 type LeaveRequest = {
   id: number;
@@ -21,26 +15,28 @@ type LeaveRequest = {
   total_day: number;
   reason: string;
   status: string;
+  name: string;
 };
 
-function DashboardPage() {
-  const [useID, setUserID] = useState("");
-  const [userName, setUserName] = useState("");
-  const [role, setRole] = useState("");
-  const [department, setDepartment] = useState("");
-  const [requestModal, setRequestModal] = useState(false);
+function RequestPage() {
+  const [userName, setUserName] = React.useState("");
+  const [useID, setUserID] = React.useState("");
+  const [role, setRole] = React.useState("");
+  const [department, setDepartment] = React.useState("");
+  const [departmentID, setDepartmentID] = React.useState("");
   const [viewReqModal, setViewReqModal] = useState(false);
+  const [leaveBalances, setLeaveBalances] = React.useState([]);
+  const [leaveRequests, setLeaveRequests] = React.useState<LeaveRequest[]>([]);
   const [selectedRequest, setSelectedRequest] = useState<LeaveRequest | null>(
     null,
   );
-  const [leaveBalances, setLeaveBalances] = useState<LeaveBalance[]>([]);
-  const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
 
   useEffect(() => {
     const userID = Cookies.get("user_id");
     const userName = Cookies.get("username");
     const role = Cookies.get("role");
     const department = Cookies.get("department");
+    const departmentID = Cookies.get("department_id");
     if (userName) {
       setUserName(userName);
     }
@@ -53,10 +49,14 @@ function DashboardPage() {
     if (department) {
       setDepartment(department);
     }
+    if (departmentID) {
+      setDepartmentID(departmentID);
+    }
   }, []);
 
   useEffect(() => {
     if (!useID) return; // Only fetch if useID is set
+    if (!departmentID) return; // Only fetch if departmentID is set
 
     const fetchLeaveBalance = async () => {
       try {
@@ -76,7 +76,7 @@ function DashboardPage() {
     const fetchLeaveRequests = async () => {
       try {
         const response = await fetch(
-          `http://localhost:8080/api/requests/requests-history/${useID}`,
+          `http://localhost:8080/api/requests/department-requests/${departmentID}`,
         );
         if (!response.ok) {
           throw new Error("Failed to fetch leave requests");
@@ -90,59 +90,28 @@ function DashboardPage() {
 
     fetchLeaveBalance();
     fetchLeaveRequests();
-  }, [useID]);
+  }, [useID, departmentID]);
 
   return (
     <>
-      <main className="flex flex-col items-center justify-center p-24">
-        <div className="mb-4">
-          <h1 className="text-2xl font-bold">Dashboard</h1>
-        </div>
-        {/* user info */}
-        <div className="mb-6 w-full max-w-5xl bg-white rounded-lg shadow-lg shadow-gray-400 p-5">
-          <h2 className="text-xl font-semibold text-gray-700 mb-4">
-            User Information
-          </h2>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-gray-500">User Info</p>
-              <p className="text-gray-700">{userName}</p>
-              <p className="text-gray-700">{role}</p>
-              <p className="text-gray-700">{department}</p>
-            </div>
-            <div>
-              <p className="text-gray-500">Leave Balances</p>
-              {leaveBalances.length > 0 ? (
-                <ul className="text-gray-700">
-                  {leaveBalances.map((balance) => (
-                    <li key={balance.leave_type}>
-                      {balance.leave_type}: {balance.balance}
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-gray-700">No leave balance data available</p>
-              )}
-            </div>
-          </div>
-        </div>
+      <main className="flex flex-col justify-center items-center min-h-screen bg-gray-100">
+        <h1 className="text-2xl font-bold mb-4 text-gray-700">คำขอใบลา</h1>
         {/* table header */}
         <div className="pl-5 pr-5 pt-5 w-full max-w-5xl bg-white rounded-t-lg shadow-lg shadow-gray-400">
           <div className="flex justify-between mb-6 items-center p-3">
             <h1 className="text-xl font-semibold text-gray-700 flex items-center">
-              Leave Requests
+              Leave Requests{" "}
+              {department && (
+                <span className="text-sm text-gray-500 ml-2">
+                  ({department})
+                </span>
+              )}
             </h1>
-            <button
-              className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-700 cursor-pointer"
-              onClick={() => setRequestModal(true)}
-            >
-              <FaPlus className="inline-block mr-2" />
-              Request
-            </button>
           </div>
           <table className="min-w-full border border-gray-300 rounded-lg overflow-hidden text-base">
             <colgroup>
               <col style={{ width: "50px" }} />
+              <col style={{ width: "140px" }} />
               <col style={{ width: "140px" }} />
               <col style={{ width: "120px" }} />
               <col style={{ width: "120px" }} />
@@ -155,6 +124,9 @@ function DashboardPage() {
               <tr className="border-b-2 border-gray-400">
                 <th className="py-3 px-2 border-b text-center font-normal text-gray-500">
                   No.
+                </th>
+                <th className="py-3 px-2 border-b text-left font-normal text-gray-500">
+                  Name
                 </th>
                 <th className="py-3 px-2 border-b text-left font-normal text-gray-500">
                   LeaveType
@@ -187,6 +159,7 @@ function DashboardPage() {
             <colgroup>
               <col style={{ width: "50px" }} />
               <col style={{ width: "140px" }} />
+              <col style={{ width: "140px" }} />
               <col style={{ width: "120px" }} />
               <col style={{ width: "120px" }} />
               <col style={{ width: "90px" }} />
@@ -202,16 +175,19 @@ function DashboardPage() {
                       {index + 1}
                     </td>
                     <td className="py-3 px-2 text-left text-gray-500">
+                      {request.name}
+                    </td>
+                    <td className="py-3 px-2 text-left text-gray-500">
                       {request.leave_type}
                     </td>
-                    <td className="py-3 px-2 text-center text-gray-500">
-                      {request.start_date}{" "}
+                    <td className="py-3 px-2 text-center text-gray-500 text-center">
+                      {request.start_date}
                       {request.start_half_day_type === "morning" &&
                         " (Morning)"}
                       {request.start_half_day_type === "afternoon" &&
                         " (Afternoon)"}
                     </td>
-                    <td className="py-3 px-2 text-center text-gray-500">
+                    <td className="py-3 px-2 text-center text-gray-500 text-center">
                       {request.start_date !== request.end_date && (
                         <>
                           {request.end_date}
@@ -245,13 +221,13 @@ function DashboardPage() {
                     </td>
                     <td className="py-3 px-2 flex items-center justify-center">
                       <button
-                        className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-700 cursor-pointer"
+                        className="bg-sky-500 text-white px-4 py-2 rounded-md hover:bg-sky-700 cursor-pointer"
                         onClick={() => {
                           setViewReqModal(true);
                           setSelectedRequest(request); // Set the selected request data
                         }}
                       >
-                        View
+                        Action
                       </button>
                     </td>
                   </tr>
@@ -270,17 +246,14 @@ function DashboardPage() {
           </table>
         </div>
       </main>
-      <RequestModal
-        open={requestModal}
-        onClose={() => setRequestModal(false)}
-      />
       <ViewReqModal
         open={viewReqModal}
         onClose={() => setViewReqModal(false)}
         requestId={selectedRequest?.id || null} // Pass the selected request ID to the modal
+         fromRequestPage={true}
       />
     </>
   );
 }
 
-export default DashboardPage;
+export default RequestPage;

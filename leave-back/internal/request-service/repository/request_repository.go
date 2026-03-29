@@ -72,3 +72,14 @@ func (r *RequestRepository) GetRequestDetailByID(requestID int) (*dto.RequestDet
 		Scan(&result).Error
 	return &result, err
 }
+
+func (r *RequestRepository) GetAllLeaveRequestsByUserDepartmentID(departmentID int) ([]dto.RequestDepartmentHistoryResponse, error) {
+	var result []dto.RequestDepartmentHistoryResponse
+	err := r.DB.Table("requests").
+		Select("requests.*, leave_types.name as leave_type, users.name as name").
+		Joins("LEFT JOIN leave_types ON leave_types.id = requests.leave_type_id").
+		Joins("LEFT JOIN users ON users.id = requests.user_id").
+		Where("users.department_id = ?", departmentID).
+		Scan(&result).Error
+	return result, err
+}

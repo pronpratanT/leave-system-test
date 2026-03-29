@@ -19,6 +19,7 @@ type SignInResponse struct {
 	Name     string `json:"name"`
 	Role	 string `json:"role"`
 	Department string `json:"department"`
+	DepartmentID int    `json:"department_id"`
 	Token    string `json:"token"`
 }
 

@@ -146,3 +146,24 @@ func (r *RequestHandler) RejectedRequest(c *gin.Context) {
 		"message": "Request rejected successfully",
 	})
 }
+
+func (h *RequestHandler) GetAllLeaveRequestsByUserDepartmentID(c *gin.Context) {
+	departmentID, err := strconv.Atoi(c.Param("departmentID"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid department ID",
+		})
+		return
+	}
+	data, err := h.Service.GetAllLeaveRequestsByUserDepartmentID(departmentID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to retrieve data",
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"data": data,
+		"total": len(data),
+	})
+}

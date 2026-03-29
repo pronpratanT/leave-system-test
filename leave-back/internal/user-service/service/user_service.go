@@ -70,6 +70,7 @@ func (s *UserService) SignIn(req *dto.SignInRequest) (*dto.SignInResponse, error
 		Name: user.Name,
 		Role: user.Role,
 		Department: department.Name,
+		DepartmentID: user.DepartmentID,
 		Token:    token,
 	}, nil
 }

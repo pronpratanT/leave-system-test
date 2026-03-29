@@ -25,4 +25,5 @@ func RequestRoutes(r *gin.RouterGroup, h *RequestHandler) {
 	r.POST("/cancel-request/:requestID", h.CancelRequest)
 	r.POST("/approve-request/:requestID", h.ApprovedRequest)
 	r.POST("/reject-request/:requestID", h.RejectedRequest)
+	r.GET("/department-requests/:departmentID", h.GetAllLeaveRequestsByUserDepartmentID)
 }

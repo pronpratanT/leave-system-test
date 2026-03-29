@@ -5,18 +5,21 @@ type LeaveRequest = {
   leave_type: string;
   start_date: string;
   end_date: string;
-  total_days: number;
+  total_day: number;
   reason: string;
   status: string;
+  comment: string;
+  manager_name: string;
 };
 
 type ViewReqModalProps = {
   open: boolean;
   onClose: () => void;
   requestId: number | null;
+  fromRequestPage?: boolean;
 };
 
-const ViewReqModal: React.FC<ViewReqModalProps> = ({ open, onClose, requestId }) => {
+const ViewReqModal: React.FC<ViewReqModalProps> = ({ open, onClose, requestId, fromRequestPage }) => {
   const [request, setRequest] = useState<LeaveRequest | null>(null);
 
   useEffect(() => {
@@ -70,7 +73,7 @@ const ViewReqModal: React.FC<ViewReqModalProps> = ({ open, onClose, requestId })
         </div>
         <div className="mb-2">
           <span className="font-medium text-gray-700">จำนวนวัน: </span>
-          <span className="text-gray-500">{request.total_days}</span>
+          <span className="text-gray-500">{request.total_day}</span>
         </div>
         <div className="mb-2">
           <span className="font-medium text-gray-700">เหตุผล: </span>
@@ -80,6 +83,20 @@ const ViewReqModal: React.FC<ViewReqModalProps> = ({ open, onClose, requestId })
           <span className="font-medium text-gray-700">สถานะ: </span>
           <span className="text-gray-500">{request.status}</span>
         </div>
+        <div className="mb-2">
+          <span className="font-medium text-gray-700">ความคิดเห็น: </span>
+          <span className="text-gray-500">{request.comment}</span>
+        </div>
+        <div className="mb-2">
+          <span className="font-medium text-gray-700">ชื่อผู้จัดการ: </span>
+          <span className="text-gray-500">{request.manager_name}</span>
+        </div>
+        {fromRequestPage && (
+          <div className="flex justify-end space-x-2">
+            <button className="bg-emerald-500 hover:bg-emerald-600 cursor-pointer text-white px-4 py-2 rounded mt-4">Approve</button>
+            <button className="bg-red-600 hover:bg-red-700 cursor-pointer text-white px-4 py-2 rounded mt-4">Reject</button>
+          </div>
+        )}
       </div>
     </div>
   );

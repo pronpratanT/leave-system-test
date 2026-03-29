@@ -14,7 +14,7 @@ type LeaveType = {
   id: number;
   name: string;
   quota: number;
-}
+};
 
 const RequestModal: React.FC<RequestModalProps> = ({
   open,
@@ -30,10 +30,14 @@ const RequestModal: React.FC<RequestModalProps> = ({
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-
   const [leaveTypes, setLeaveTypes] = useState<LeaveType[]>([]);
-
   const [useID, setUserID] = useState("");
+
+  // เช็คว่าเลือกวันเดียวกันหรือเปล่า
+  const isSameDay =
+    !!startDate &&
+    !!endDate &&
+    startDate.toDateString() === endDate.toDateString();
 
   const formatDate = (date: Date | null) => {
     if (!date) return "";
@@ -45,25 +49,18 @@ const RequestModal: React.FC<RequestModalProps> = ({
 
   useEffect(() => {
     const userID = Cookies.get("user_id");
-    if (userID) {
-      setUserID(userID);
-    }
+    if (userID) setUserID(userID);
   }, []);
 
   useEffect(() => {
     const fetchLeaveType = async () => {
       try {
-        const response = await fetch(
-          `http://localhost:8080/api/requests/leave-types`,
-        );
-        if (!response.ok) {
-          throw new Error("Failed to fetch leave balance");
-        }
+        const response = await fetch(`http://localhost:8080/api/requests/leave-types`);
+        if (!response.ok) throw new Error("Failed to fetch leave balance");
         const data = await response.json();
         setLeaveTypes(data.data);
       } catch (error) {
         console.error(error);
-        return null;
       }
     };
     fetchLeaveType();
@@ -80,21 +77,17 @@ const RequestModal: React.FC<RequestModalProps> = ({
       reason: reason,
     };
     console.log("Submitting payload:", payload);
-    setError(""); // reset error ก่อน submit
+    setError("");
     setSuccess("");
     setIsSubmitting(true);
     try {
-      const response = await fetch(
-        "http://localhost:8080/api/requests/create-request",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        },
-      );
+      const response = await fetch("http://localhost:8080/api/requests/create-request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
       const result = await response.json();
       if (!response.ok) {
-        // สมมติ backend ส่ง { error: "ข้อความผิดพลาด" }
         setError(result.error || "Failed to submit leave request");
         setIsSubmitting(false);
         return;
@@ -126,9 +119,7 @@ const RequestModal: React.FC<RequestModalProps> = ({
 
         {/* Leave Type */}
         <div className="mb-4">
-          <label className="block text-gray-700 font-medium mb-1">
-            Leave Type
-          </label>
+          <label className="block text-gray-700 font-medium mb-1">Leave Type</label>
           <select
             className="w-full border border-gray-300 rounded-md p-2 text-gray-700"
             value={leaveType}
@@ -146,14 +137,19 @@ const RequestModal: React.FC<RequestModalProps> = ({
 
         {/* Date Range */}
         <div className="mb-2">
-          <label className="block text-gray-700 font-medium mb-1">
-            Date Range
-          </label>
+          <label className="block text-gray-700 font-medium mb-1">Date Range</label>
           <div className="flex items-center gap-2">
             <div className="relative flex-1">
               <DatePicker
                 selected={startDate}
-                onChange={(date: Date | null) => setStartDate(date)}
+                onChange={(date: Date | null) => {
+                  setStartDate(date);
+                  // reset endDate ถ้า startDate ใหม่ > endDate เดิม
+                  if (date && endDate && date > endDate) {
+                    setEndDate(null);
+                    setEndHalfDayType("");
+                  }
+                }}
                 selectsStart
                 startDate={startDate}
                 endDate={endDate}
@@ -168,7 +164,13 @@ const RequestModal: React.FC<RequestModalProps> = ({
             <div className="relative flex-1">
               <DatePicker
                 selected={endDate}
-                onChange={(date: Date | null) => setEndDate(date)}
+                onChange={(date: Date | null) => {
+                  setEndDate(date);
+                  // ถ้าเลือกวันเดียวกับ startDate → reset endHalfDayType
+                  if (date && startDate && date.toDateString() === startDate.toDateString()) {
+                    setEndHalfDayType("");
+                  }
+                }}
                 selectsEnd
                 startDate={startDate}
                 endDate={endDate}
@@ -187,11 +189,9 @@ const RequestModal: React.FC<RequestModalProps> = ({
         {/* Half day selects */}
         <div className="flex space-x-4 mb-4">
           <div className="w-1/2">
-            <label className="text-sm text-gray-600 block mb-1">
-              ครึ่งวันต้น:
-            </label>
+            <label className="text-sm text-gray-600 block mb-1">ครึ่งวันต้น:</label>
             <select
-              className="w-full border border-gray-300 rounded-md p-1 text-gray-700 text-sm :disabled:bg-gray-100 disabled:text-gray-400 cursor-pointer disabled:cursor-not-allowed"
+              className="w-full border border-gray-300 rounded-md p-1 text-gray-700 text-sm disabled:bg-gray-100 disabled:text-gray-400 cursor-pointer disabled:cursor-not-allowed"
               value={startHalfDayType}
               onChange={(e) => setStartHalfDayType(e.target.value)}
               disabled={!startDate}
@@ -204,12 +204,15 @@ const RequestModal: React.FC<RequestModalProps> = ({
           <div className="w-1/2">
             <label className="text-sm text-gray-600 block mb-1">
               ครึ่งวันท้าย:
+              {isSameDay && (
+                <span className="ml-1 text-xs text-gray-400">(วันเดียวกัน)</span>
+              )}
             </label>
             <select
-              className="w-full border border-gray-300 rounded-md p-1 text-gray-700 text-sm :disabled:bg-gray-100 disabled:text-gray-400 cursor-pointer disabled:cursor-not-allowed"
+              className="w-full border border-gray-300 rounded-md p-1 text-gray-700 text-sm disabled:bg-gray-100 disabled:text-gray-400 cursor-pointer disabled:cursor-not-allowed"
               value={endHalfDayType}
               onChange={(e) => setEndHalfDayType(e.target.value)}
-              disabled={!endDate}
+              disabled={!endDate || isSameDay} // disabled เมื่อวันเดียวกัน
             >
               <option value="">เต็มวัน</option>
               <option value="morning">ครึ่งวันเช้า</option>
@@ -262,10 +265,7 @@ const RequestModal: React.FC<RequestModalProps> = ({
       </div>
 
       {/* Portal สำหรับ datepicker popup */}
-      <div
-        id="datepicker-portal"
-        style={{ zIndex: 9999, position: "relative" }}
-      />
+      <div id="datepicker-portal" style={{ zIndex: 9999, position: "relative" }} />
     </div>
   );
 };
