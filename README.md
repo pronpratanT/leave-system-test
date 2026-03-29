@@ -1,0 +1,23 @@
+- การติดตั้งระบบ
+เริ่มต้นให้ทำการ run docker-compose up -d --build ทำการเข้าไปที่ path ของ test-pgadmin
+- ทำการ login admin@admin.com admin1234
+- ทำการกด Add New Server
+- General - Name ตั้งชื่ออะไรก็ได้
+- ไปที่ Connection
+- Host name/address : postgres
+- Port : 5432
+- Maintenance database : leave_db
+- Username : admin
+- Password : 1234
+- Save password : on
+
+- Stack ที่เลือกใช้
+- React (Next.js)
+- Go (Gin)
+- Docker
+- PostgreSQL
+- เหตุผลที่เลือกใช้
+- FrontEnd: ใช้ React (Next.js) เพราะพัฒนาได้ง่าย ร่วมกับ Tailwind CSS ช่วยให้ออกแบบ UI ได้รวดเร็วและสวยงาม สามารถสร้าง components เพื่อเรียกใช้ซ้ำได้ตามสถานการณ์
+- BackEnd: ใช้ Go (Gin) เพราะเหมาะกับการพัฒนา API โครงสร้างโปรเจกต์แบ่งสัดส่วนชัดเจน อ่านและดูแลรักษาง่าย
+- Docker: ช่วยให้โปรเจกต์รันได้ทุกที่ เพียงใช้คำสั่ง docker-compose ไม่ต้องกังวลเรื่อง environment
+- PostgreSQL: ฟีเจอร์ครบ ติดตั้งและใช้งานร่วมกับ Docker ได้สะดวก
