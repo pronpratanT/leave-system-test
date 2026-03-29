@@ -79,7 +79,7 @@ func (s *UserService) GetUserByID(userID int) (*model.Users, error) {
 	return s.AppRepo.GetUserByID(userID)
 }
 
-// func (s *UserService) SignOut() error {
-// 	// Implement sign-out logic if needed (e.g., token invalidation)
-// 	return nil
-// }
+func (s *UserService) SignOut() error {
+	// Implement sign-out logic if needed (e.g., token invalidation)
+	return nil
+}

@@ -7,6 +7,8 @@ import RequestModal from "../components/modal/create_req";
 import ViewReqModal from "../components/modal/view_req";
 import { SlOptionsVertical } from "react-icons/sl";
 import Cookies from "js-cookie";
+import { LuLogOut } from "react-icons/lu";
+import { MdOutlineSpaceDashboard } from "react-icons/md";
 
 type LeaveBalance = {
   leave_type: string;
@@ -40,7 +42,7 @@ function DashboardPage() {
   const [leaveBalances, setLeaveBalances] = useState<LeaveBalance[]>([]);
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
 
-    const [showOptions, setShowOptions] = useState(false); // Moved this line up for clarity
+  const [showOptions, setShowOptions] = useState(false); // Moved this line up for clarity
 
   // Filter state
   const [filterStatus, setFilterStatus] = useState("");
@@ -64,9 +66,9 @@ function DashboardPage() {
       const response = await fetch(
         `http://localhost:8080/api/users/leave-balances/${useID}`,
         {
-            headers: {
-                Authorization: `Bearer ${Cookies.get("token")}`,
-            },
+          headers: {
+            Authorization: `Bearer ${Cookies.get("token")}`,
+          },
         },
       );
       if (!response.ok) throw new Error("Failed to fetch leave balance");
@@ -83,9 +85,9 @@ function DashboardPage() {
       const response = await fetch(
         `http://localhost:8080/api/requests/requests-history/${useID}`,
         {
-            headers: {
-                Authorization: `Bearer ${Cookies.get("token")}`,
-            },
+          headers: {
+            Authorization: `Bearer ${Cookies.get("token")}`,
+          },
         },
       );
       if (!response.ok) throw new Error("Failed to fetch leave requests");
@@ -95,6 +97,30 @@ function DashboardPage() {
       console.error("Error fetching data:", error);
     }
   }, [useID]);
+
+  const handleLogout = async () => {
+    const confirmed = window.confirm("คุณต้องการออกจากระบบใช่หรือไม่?");
+    if (!confirmed) return;
+    try {
+      await fetch("http://localhost:8080/api/users/signout", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${Cookies.get("token")}`,
+        },
+      });
+    } catch (error) {
+      console.error("Error during logout:", error);
+    } finally {
+      Cookies.remove("token");
+      Cookies.remove("user_id");
+      Cookies.remove("username");
+      Cookies.remove("role");
+      Cookies.remove("department");
+      Cookies.remove("department_id");
+      Cookies.remove("name");
+      router.push("/login");
+    }
+  };
 
   useEffect(() => {
     fetchLeaveBalance();
@@ -121,49 +147,99 @@ function DashboardPage() {
         {/* user info */}
         <div className="mb-6 w-full max-w-5xl bg-white rounded-lg shadow-lg shadow-gray-400 p-5">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold text-gray-700">
+            <h2 className="text-xl font-semibold text-sky-700">
               User Information
             </h2>
-              <div className="relative">
-                <button className="p-2" onClick={() => setShowOptions((v) => !v)}>
-                  <SlOptionsVertical className="text-gray-500 hover:text-gray-700 cursor-pointer" />
-                </button>
-                {showOptions && (
-                  <div className="absolute right-0 mt-2 w-40 bg-white border rounded shadow-lg shadow-gray-300 z-10 overflow-hidden">
-                    {role === "manager" && (
+
+            <div className="relative">
+              <button
+                className="p-2 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
+                onClick={() => setShowOptions((v) => !v)}
+              >
+                <SlOptionsVertical className="text-gray-400 hover:text-gray-600 w-4 h-4" />
+              </button>
+
+              {showOptions && (
+                <>
+                  {/* backdrop กดนอก dropdown ปิด */}
+                  <div
+                    className="fixed inset-0 z-10"
+                    onClick={() => setShowOptions(false)}
+                  />
+
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl shadow-gray-200 border border-gray-100 z-20 overflow-hidden animate-fade-in">
+                    {/* user info ด้านบน */}
+                    <div className="px-4 py-3 border-b border-gray-100">
+                      <p className="text-sm font-medium text-gray-700">
+                        {userName}
+                      </p>
+                      <p className="text-xs text-gray-400 capitalize">{role}</p>
+                    </div>
+
+                    {/* menu items */}
+                    <div className="py-1">
+                      {role === "manager" && (
+                        <button
+                          className="flex items-center gap-2 w-full text-left px-4 py-2.5 text-sm text-gray-600 hover:bg-blue-50 hover:text-blue-600 cursor-pointer transition-colors"
+                          onClick={() => {
+                            setShowOptions(false);
+                            router.push("/request");
+                          }}
+                        >
+                          <MdOutlineSpaceDashboard className="w-4 h-4" />
+                          Go to Request
+                        </button>
+                      )}
+                    </div>
+
+                    {/* divider */}
+                    <div className="border-t border-gray-100" />
+
+                    <div className="py-1">
                       <button
-                        className="block w-full text-left px-4 py-2 text-gray-500 hover:text-blue-800 cursor-pointer hover:bg-gray-200 hover:text-blue-600"
-                        onClick={() => { setShowOptions(false); router.push("/request"); }}
+                        className="flex items-center gap-2 w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 cursor-pointer transition-colors"
+                        onClick={() => {
+                          handleLogout();
+                          setShowOptions(false);
+                        }}
                       >
-                        Go to Request
+                        <LuLogOut className="w-4 h-4" />
+                        Logout
                       </button>
-                    )}
-                    <button className="block w-full text-left px-4 py-2 text-gray-500 cursor-pointer hover:bg-gray-200 hover:text-red-600">
-                      Logout
-                    </button>
+                    </div>
                   </div>
-                )}
-              </div>
+                </>
+              )}
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-gray-500">User Info</p>
-              <p className="text-gray-700">{userName}</p>
-              <p className="text-gray-700">{role}</p>
-              <p className="text-gray-700">{department}</p>
+              <p className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3">
+                User Info
+              </p>
+              <p className="text-gray-500">Name: {userName}</p>
+              <p className="text-gray-500">Role: {role}</p>
+              <p className="text-gray-500">Department: {department}</p>
             </div>
             <div>
-              <p className="text-gray-500">Leave Balances</p>
+              <p className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3">Leave Balances</p>
               {leaveBalances.length > 0 ? (
-                <ul className="text-gray-700">
+                <ul className="text-gray-500">
                   {leaveBalances.map((balance) => (
-                    <li key={balance.leave_type}>
-                      {balance.leave_type}: {balance.balance}
+                    <li
+                      key={balance.leave_type}
+                      className={
+                        balance.balance === 0 ? "text-red-500" : "text-gray-500"
+                      }
+                    >
+                      {balance.leave_type}: {balance.balance} day
+                      {balance.balance !== 1 ? "s" : ""}{" "}
+                      {balance.balance === 0 && "(No balance)"}
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className="text-gray-700">No leave balance data available</p>
+                <p className="text-gray-500">No leave balance data available</p>
               )}
             </div>
           </div>

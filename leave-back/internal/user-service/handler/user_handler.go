@@ -46,3 +46,10 @@ func (h *UserHandler) SignIn(c *gin.Context) {
 		"data":    resp,
 	})
 }
+
+func (h *UserHandler) SignOut(c *gin.Context) {
+	// Implement sign-out logic if needed (e.g., invalidate JWT token)
+	c.JSON(http.StatusOK, gin.H{
+		"message": "User signed out successfully",
+	})
+}

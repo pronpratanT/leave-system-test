@@ -31,6 +31,15 @@ services:
       - "8080:8080"
     depends_on:
       - postgres
+      
+  leave-app:
+    build: ./leave-app
+    container_name: leave-app
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - app
 
 volumes:
   pgdata:

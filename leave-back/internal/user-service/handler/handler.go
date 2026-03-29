@@ -18,6 +18,7 @@ func NewUserHandler(s *service.UserService) *UserHandler {
 func UserRoutes(r *gin.RouterGroup, h *UserHandler) {
 	r.POST("/signup", h.SignUp)
 	r.POST("/signin", h.SignIn)
+	r.POST("/signout", middleware.JWTAuthMiddleware(), h.SignOut)
 	r.GET("/leave-balances/:userID", middleware.JWTAuthMiddleware(), h.GetLeaveBalancesByUserID)
 	r.GET("/departments", h.GetAllDepartments)
 	r.POST("/departments", middleware.JWTAuthMiddleware(), h.CreateDepartment)

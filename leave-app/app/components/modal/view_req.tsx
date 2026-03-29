@@ -87,6 +87,8 @@ const ViewReqModal: React.FC<ViewReqModalProps> = ({
   const getManagerID = () => parseInt(Cookies.get("user_id") || "0");
 
   const handleApprove = async () => {
+    const confirmed = window.confirm("คุณต้องการอนุมัติคำขอลาหยุดนี้ใช่หรือไม่?");
+    if (!confirmed) return;
     if (comment.trim() === "") {
       setError("Please provide a comment before approving");
       return;
@@ -126,6 +128,8 @@ const ViewReqModal: React.FC<ViewReqModalProps> = ({
   };
 
   const handleReject = async () => {
+    const confirmed = window.confirm("คุณต้องการปฏิเสธคำขอลาหยุดนี้ใช่หรือไม่?");
+    if (!confirmed) return;
     if (comment.trim() === "") {
       setError("Please provide a comment before rejecting");
       return;
@@ -165,6 +169,8 @@ const ViewReqModal: React.FC<ViewReqModalProps> = ({
   };
 
   const handleCancel = async () => {
+    const confirmed = window.confirm("คุณต้องการยกเลิกคำขอลาหยุดนี้ใช่หรือไม่?");
+    if (!confirmed) return;
     setIsSubmitting(true);
     setError("");
     setSuccess("");

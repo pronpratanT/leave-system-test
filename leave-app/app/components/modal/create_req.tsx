@@ -55,11 +55,14 @@ const RequestModal: React.FC<RequestModalProps> = ({
   useEffect(() => {
     const fetchLeaveType = async () => {
       try {
-        const response = await fetch(`http://localhost:8080/api/requests/leave-types`, {
-          headers: {
-            Authorization: `Bearer ${Cookies.get("token")}`,
+        const response = await fetch(
+          `http://localhost:8080/api/requests/leave-types`,
+          {
+            headers: {
+              Authorization: `Bearer ${Cookies.get("token")}`,
+            },
           },
-        });
+        );
         if (!response.ok) throw new Error("Failed to fetch leave balance");
         const data = await response.json();
         setLeaveTypes(data.data);
@@ -85,14 +88,17 @@ const RequestModal: React.FC<RequestModalProps> = ({
     setSuccess("");
     setIsSubmitting(true);
     try {
-      const response = await fetch("http://localhost:8080/api/requests/create-request", {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${Cookies.get("token")}`
+      const response = await fetch(
+        "http://localhost:8080/api/requests/create-request",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${Cookies.get("token")}`,
+          },
+          body: JSON.stringify(payload),
         },
-        body: JSON.stringify(payload),
-      });
+      );
       const result = await response.json();
       if (!response.ok) {
         setError(result.error || "Failed to submit leave request");
@@ -100,8 +106,16 @@ const RequestModal: React.FC<RequestModalProps> = ({
         return;
       }
       setSuccess("Leave request submitted successfully");
-      setIsSubmitting(false);
       setTimeout(() => {
+        // Clear form fields
+        setLeaveType("");
+        setStartDate(null);
+        setEndDate(null);
+        setStartHalfDayType("");
+        setEndHalfDayType("");
+        setReason("");
+        setIsSubmitting(false);
+        setSuccess("");
         onClose();
       }, 2000);
     } catch (error) {
@@ -128,7 +142,9 @@ const RequestModal: React.FC<RequestModalProps> = ({
 
         {/* Leave Type */}
         <div className="mb-4">
-          <label className="block text-gray-700 font-medium mb-1">Leave Type</label>
+          <label className="block text-gray-700 font-medium mb-1">
+            Leave Type
+          </label>
           <select
             className="w-full border border-gray-300 rounded-md p-2 text-gray-700"
             value={leaveType}
@@ -146,7 +162,9 @@ const RequestModal: React.FC<RequestModalProps> = ({
 
         {/* Date Range */}
         <div className="mb-2">
-          <label className="block text-gray-700 font-medium mb-1">Date Range</label>
+          <label className="block text-gray-700 font-medium mb-1">
+            Date Range
+          </label>
           <div className="flex items-center gap-2">
             <div className="relative flex-1">
               <DatePicker
@@ -176,7 +194,11 @@ const RequestModal: React.FC<RequestModalProps> = ({
                 onChange={(date: Date | null) => {
                   setEndDate(date);
                   // ถ้าเลือกวันเดียวกับ startDate → reset endHalfDayType
-                  if (date && startDate && date.toDateString() === startDate.toDateString()) {
+                  if (
+                    date &&
+                    startDate &&
+                    date.toDateString() === startDate.toDateString()
+                  ) {
                     setEndHalfDayType("");
                   }
                 }}
@@ -198,7 +220,9 @@ const RequestModal: React.FC<RequestModalProps> = ({
         {/* Half day selects */}
         <div className="flex space-x-4 mb-4">
           <div className="w-1/2">
-            <label className="text-sm text-gray-600 block mb-1">ครึ่งวันต้น:</label>
+            <label className="text-sm text-gray-600 block mb-1">
+              ครึ่งวันต้น:
+            </label>
             <select
               className="w-full border border-gray-300 rounded-md p-1 text-gray-700 text-sm disabled:bg-gray-100 disabled:text-gray-400 cursor-pointer disabled:cursor-not-allowed"
               value={startHalfDayType}
@@ -214,7 +238,9 @@ const RequestModal: React.FC<RequestModalProps> = ({
             <label className="text-sm text-gray-600 block mb-1">
               ครึ่งวันท้าย:
               {isSameDay && (
-                <span className="ml-1 text-xs text-gray-400">(วันเดียวกัน)</span>
+                <span className="ml-1 text-xs text-gray-400">
+                  (วันเดียวกัน)
+                </span>
               )}
             </label>
             <select
@@ -274,7 +300,10 @@ const RequestModal: React.FC<RequestModalProps> = ({
       </div>
 
       {/* Portal สำหรับ datepicker popup */}
-      <div id="datepicker-portal" style={{ zIndex: 9999, position: "relative" }} />
+      <div
+        id="datepicker-portal"
+        style={{ zIndex: 9999, position: "relative" }}
+      />
     </div>
   );
 };
