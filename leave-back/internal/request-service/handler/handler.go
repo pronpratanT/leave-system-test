@@ -2,6 +2,7 @@ package handler
 
 import (
 	"leave-back/internal/request-service/service"
+	"leave-back/shared/middleware"
 
 	"github.com/gin-gonic/gin"
 )
@@ -15,15 +16,15 @@ func NewRequestHandler(s *service.RequestService) *RequestHandler {
 }
 
 func RequestRoutes(r *gin.RouterGroup, h *RequestHandler) {
-	r.GET("/leave-types", h.GetAllLeaveTypes)
-	r.POST("/leave-types", h.CreateLeaveTypes)
+	r.GET("/leave-types",  middleware.JWTAuthMiddleware(), h.GetAllLeaveTypes)
+	r.POST("/leave-types", middleware.JWTAuthMiddleware(), h.CreateLeaveTypes)
 	r.GET("/holidays", h.GetAllHolidays)
-	r.POST("/holidays", h.CreateHoliday)
-	r.GET("/requests-history/:userID", h.GetRequestsHistoryByUserID)
-	r.GET("/request-detail/:requestID", h.GetRequestDetailByID)
-	r.POST("/create-request", h.CreateRequest)
-	r.POST("/cancel-request", h.CancelRequest)
-	r.POST("/approve-request", h.ApprovedRequest)
-	r.POST("/reject-request", h.RejectedRequest)
-	r.GET("/department-requests/:departmentID", h.GetAllLeaveRequestsByUserDepartmentID)
+	r.POST("/holidays", middleware.JWTAuthMiddleware(), h.CreateHoliday)
+	r.GET("/requests-history/:userID", middleware.JWTAuthMiddleware(), h.GetRequestsHistoryByUserID)
+	r.GET("/request-detail/:requestID", middleware.JWTAuthMiddleware(), h.GetRequestDetailByID)
+	r.POST("/create-request", middleware.JWTAuthMiddleware(), h.CreateRequest)
+	r.POST("/cancel-request", middleware.JWTAuthMiddleware(), h.CancelRequest)
+	r.POST("/approve-request", middleware.JWTAuthMiddleware(), h.ApprovedRequest)
+	r.POST("/reject-request", middleware.JWTAuthMiddleware(), h.RejectedRequest)
+	r.GET("/department-requests/:departmentID", middleware.JWTAuthMiddleware(), h.GetAllLeaveRequestsByUserDepartmentID)
 }

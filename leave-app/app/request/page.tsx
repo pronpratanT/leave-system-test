@@ -30,60 +30,73 @@ function RequestPage() {
     null,
   );
 
+  // Filter state
+  const [filterStatus, setFilterStatus] = useState("");
+  const [filterStartDate, setFilterStartDate] = useState("");
+  const [filterEndDate, setFilterEndDate] = useState("");
+
   useEffect(() => {
     const userID = Cookies.get("user_id");
     const role = Cookies.get("role");
     const department = Cookies.get("department");
     const departmentID = Cookies.get("department_id");
-    if (userID) {
-      setUserID(userID);
-    }
-    if (role) {
-      setRole(role);
-    }
-    if (department) {
-      setDepartment(department);
-    }
-    if (departmentID) {
-      setDepartmentID(departmentID);
-    }
+    if (userID) setUserID(userID);
+    if (role) setRole(role);
+    if (department) setDepartment(department);
+    if (departmentID) setDepartmentID(departmentID);
   }, []);
 
   useEffect(() => {
+    if (!role) return; // รอให้ role โหลดจาก cookie ก่อน
     if (role !== "manager") {
       alert("You do not have permission to access this page");
       router.push("/dashboard");
     }
   }, [role]);
 
-  useEffect(() => {
-    if (!useID) return; // Only fetch if useID is set
-    if (!departmentID) return; // Only fetch if departmentID is set
-
-    const fetchLeaveRequests = async () => {
-      try {
-        const response = await fetch(
-          `http://localhost:8080/api/requests/department-requests/${departmentID}`,
-        );
-        if (!response.ok) {
-          throw new Error("Failed to fetch leave requests");
-        }
-        const data = await response.json();
-        setLeaveRequests(data.data);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-
-    fetchLeaveRequests();
+  const fetchLeaveRequests = React.useCallback(async () => {
+    if (!useID || !departmentID) return;
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/requests/department-requests/${departmentID}`,
+        {
+            headers: {
+                Authorization: `Bearer ${Cookies.get("token")}`,
+            },
+        },
+      );
+      if (!response.ok) throw new Error("Failed to fetch leave requests");
+      const data = await response.json();
+      setLeaveRequests(data.data);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
   }, [useID, departmentID]);
+
+  useEffect(() => {
+    fetchLeaveRequests();
+  }, [fetchLeaveRequests]);
+
+  // Filter logic
+  const filteredRequests = (leaveRequests ?? []).filter((req) => {
+    if (filterStatus && req.status !== filterStatus) return false;
+    if (filterStartDate && req.start_date < filterStartDate) return false;
+    if (filterEndDate && req.end_date > filterEndDate) return false;
+    return true;
+  });
+
+  const handleClearFilter = () => {
+    setFilterStatus("");
+    setFilterStartDate("");
+    setFilterEndDate("");
+  };
 
   return (
     <>
       <main className="flex flex-col justify-center items-center min-h-screen bg-gray-100">
-        {/* table header */}
+        {/* table header + filter */}
         <div className="pl-5 pr-5 pt-5 w-full max-w-5xl bg-white rounded-t-lg shadow-lg shadow-gray-400">
-          <div className="flex justify-between mb-6 items-center p-3">
+          <div className="flex justify-between mb-4 items-center p-3">
             <h1 className="text-xl font-semibold text-gray-700 flex items-center">
               Leave Requests{" "}
               {department && (
@@ -92,7 +105,58 @@ function RequestPage() {
                 </span>
               )}
             </h1>
+            <button className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-700 cursor-pointer"
+                onClick={() => router.push("/dashboard")}>
+                Go to Dashboard
+              </button>
           </div>
+
+          {/* Filter bar */}
+          <div className="flex flex-wrap gap-3 px-3 pb-4 items-end">
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Status</label>
+              <select
+                className="border border-gray-300 rounded-md px-2 py-1.5 text-sm text-gray-700"
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+              >
+                <option value="">ทั้งหมด</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">
+                ตั้งแต่วันที่
+              </label>
+              <input
+                type="date"
+                className="border border-gray-300 rounded-md px-2 py-1.5 text-sm text-gray-700"
+                value={filterStartDate}
+                onChange={(e) => setFilterStartDate(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">
+                ถึงวันที่
+              </label>
+              <input
+                type="date"
+                className="border border-gray-300 rounded-md px-2 py-1.5 text-sm text-gray-700"
+                value={filterEndDate}
+                onChange={(e) => setFilterEndDate(e.target.value)}
+              />
+            </div>
+            <button
+              className="text-sm text-gray-400 hover:text-gray-600 cursor-pointer px-2 py-1.5 border border-gray-200 rounded-md"
+              onClick={handleClearFilter}
+            >
+              Clear
+            </button>
+          </div>
+
           <table className="min-w-full border border-gray-300 rounded-lg overflow-hidden text-base">
             <colgroup>
               <col style={{ width: "50px" }} />
@@ -138,6 +202,7 @@ function RequestPage() {
             </thead>
           </table>
         </div>
+
         {/* table body */}
         <div className="pl-5 pr-5 pb-5 w-full max-w-5xl bg-white rounded-b-lg shadow-lg shadow-gray-400">
           <table className="min-w-full border border-gray-300 rounded-lg overflow-hidden text-base">
@@ -153,8 +218,8 @@ function RequestPage() {
               <col style={{ width: "120px" }} />
             </colgroup>
             <tbody>
-              {leaveRequests.length > 0 ? (
-                leaveRequests.map((request, index) => (
+              {filteredRequests.length > 0 ? (
+                filteredRequests.map((request, index) => (
                   <tr key={request.id} className="border-b border-gray-200">
                     <td className="py-3 px-2 text-center text-gray-500">
                       {index + 1}
@@ -165,14 +230,14 @@ function RequestPage() {
                     <td className="py-3 px-2 text-left text-gray-500">
                       {request.leave_type}
                     </td>
-                    <td className="py-3 px-2 text-center text-gray-500 text-center">
+                    <td className="py-3 px-2 text-center text-gray-500">
                       {request.start_date}
                       {request.start_half_day_type === "morning" &&
                         " (Morning)"}
                       {request.start_half_day_type === "afternoon" &&
                         " (Afternoon)"}
                     </td>
-                    <td className="py-3 px-2 text-center text-gray-500 text-center">
+                    <td className="py-3 px-2 text-center text-gray-500">
                       {request.start_date !== request.end_date && (
                         <>
                           {request.end_date}
@@ -213,7 +278,7 @@ function RequestPage() {
                         className="bg-sky-500 text-white px-4 py-2 rounded-md hover:bg-sky-700 cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed"
                         onClick={() => {
                           setViewReqModal(true);
-                          setSelectedRequest(request); // Set the selected request data
+                          setSelectedRequest(request);
                         }}
                         disabled={
                           request.status === "approved" ||
@@ -229,7 +294,7 @@ function RequestPage() {
               ) : (
                 <tr>
                   <td
-                    colSpan={8}
+                    colSpan={9}
                     className="py-3 px-2 border-b text-center text-gray-500"
                   >
                     No leave requests found.
@@ -242,8 +307,11 @@ function RequestPage() {
       </main>
       <ViewReqModal
         open={viewReqModal}
-        onClose={() => setViewReqModal(false)}
-        requestId={selectedRequest?.id || null} // Pass the selected request ID to the modal
+        onClose={() => {
+          setViewReqModal(false);
+          fetchLeaveRequests();
+        }}
+        requestId={selectedRequest?.id || null}
         fromRequestPage={true}
       />
     </>

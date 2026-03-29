@@ -2,6 +2,7 @@ package handler
 
 import (
 	"leave-back/internal/user-service/service"
+	"leave-back/shared/middleware"
 
 	"github.com/gin-gonic/gin"
 )
@@ -17,8 +18,7 @@ func NewUserHandler(s *service.UserService) *UserHandler {
 func UserRoutes(r *gin.RouterGroup, h *UserHandler) {
 	r.POST("/signup", h.SignUp)
 	r.POST("/signin", h.SignIn)
-	//middleware.JWTAuthMiddleware(),
-	r.GET("/leave-balances/:userID", h.GetLeaveBalancesByUserID)
+	r.GET("/leave-balances/:userID", middleware.JWTAuthMiddleware(), h.GetLeaveBalancesByUserID)
 	r.GET("/departments", h.GetAllDepartments)
-	r.POST("/departments", h.CreateDepartment)
+	r.POST("/departments", middleware.JWTAuthMiddleware(), h.CreateDepartment)
 }

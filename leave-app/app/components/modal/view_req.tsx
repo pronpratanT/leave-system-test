@@ -63,7 +63,12 @@ const ViewReqModal: React.FC<ViewReqModalProps> = ({
       setLoading(true);
       try {
         const response = await fetch(
-          `http://localhost:8080/api/requests/request-detail/${requestId}`
+          `http://localhost:8080/api/requests/request-detail/${requestId}`,
+          {
+            headers: {
+                Authorization: `Bearer ${Cookies.get("token")}`,
+            },
+          }
         );
         if (!response.ok) throw new Error("Failed to fetch request details");
         const data = await response.json();
@@ -94,7 +99,10 @@ const ViewReqModal: React.FC<ViewReqModalProps> = ({
         `http://localhost:8080/api/requests/approve-request`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${Cookies.get("token")}`
+          },
           body: JSON.stringify({
             request_id: requestId,
             manager_id: getManagerID(),
@@ -130,7 +138,10 @@ const ViewReqModal: React.FC<ViewReqModalProps> = ({
         `http://localhost:8080/api/requests/reject-request`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${Cookies.get("token")}`
+          },
           body: JSON.stringify({
             request_id: requestId,
             manager_id: getManagerID(),
@@ -166,7 +177,10 @@ const ViewReqModal: React.FC<ViewReqModalProps> = ({
         `http://localhost:8080/api/requests/cancel-request`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${Cookies.get("token")}`
+          },
           body: JSON.stringify({
             request_id: requestId,
             user_id: Number(userID),

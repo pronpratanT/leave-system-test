@@ -55,7 +55,11 @@ const RequestModal: React.FC<RequestModalProps> = ({
   useEffect(() => {
     const fetchLeaveType = async () => {
       try {
-        const response = await fetch(`http://localhost:8080/api/requests/leave-types`);
+        const response = await fetch(`http://localhost:8080/api/requests/leave-types`, {
+          headers: {
+            Authorization: `Bearer ${Cookies.get("token")}`,
+          },
+        });
         if (!response.ok) throw new Error("Failed to fetch leave balance");
         const data = await response.json();
         setLeaveTypes(data.data);
@@ -83,7 +87,10 @@ const RequestModal: React.FC<RequestModalProps> = ({
     try {
       const response = await fetch("http://localhost:8080/api/requests/create-request", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${Cookies.get("token")}`
+        },
         body: JSON.stringify(payload),
       });
       const result = await response.json();

@@ -1,9 +1,11 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/dist/client/components/navigation";
 import { FaPlus } from "react-icons/fa";
 import RequestModal from "../components/modal/create_req";
 import ViewReqModal from "../components/modal/view_req";
+import { SlOptionsVertical } from "react-icons/sl";
 import Cookies from "js-cookie";
 
 type LeaveBalance = {
@@ -24,6 +26,8 @@ type LeaveRequest = {
 };
 
 function DashboardPage() {
+  const router = useRouter();
+
   const [useID, setUserID] = useState("");
   const [userName, setUserName] = useState("");
   const [role, setRole] = useState("");
@@ -34,25 +38,24 @@ function DashboardPage() {
     null,
   );
   const [leaveBalances, setLeaveBalances] = useState<LeaveBalance[]>([]);
-  const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[] | null>([]);
+  const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
+
+    const [showOptions, setShowOptions] = useState(false); // Moved this line up for clarity
+
+  // Filter state
+  const [filterStatus, setFilterStatus] = useState("");
+  const [filterStartDate, setFilterStartDate] = useState("");
+  const [filterEndDate, setFilterEndDate] = useState("");
 
   useEffect(() => {
     const userID = Cookies.get("user_id");
     const userName = Cookies.get("username");
     const role = Cookies.get("role");
     const department = Cookies.get("department");
-    if (userName) {
-      setUserName(userName);
-    }
-    if (userID) {
-      setUserID(userID);
-    }
-    if (role) {
-      setRole(role);
-    }
-    if (department) {
-      setDepartment(department);
-    }
+    if (userName) setUserName(userName);
+    if (userID) setUserID(userID);
+    if (role) setRole(role);
+    if (department) setDepartment(department);
   }, []);
 
   const fetchLeaveBalance = React.useCallback(async () => {
@@ -60,10 +63,13 @@ function DashboardPage() {
     try {
       const response = await fetch(
         `http://localhost:8080/api/users/leave-balances/${useID}`,
+        {
+            headers: {
+                Authorization: `Bearer ${Cookies.get("token")}`,
+            },
+        },
       );
-      if (!response.ok) {
-        throw new Error("Failed to fetch leave balance");
-      }
+      if (!response.ok) throw new Error("Failed to fetch leave balance");
       const data = await response.json();
       setLeaveBalances(data.data);
     } catch (error) {
@@ -76,10 +82,13 @@ function DashboardPage() {
     try {
       const response = await fetch(
         `http://localhost:8080/api/requests/requests-history/${useID}`,
+        {
+            headers: {
+                Authorization: `Bearer ${Cookies.get("token")}`,
+            },
+        },
       );
-      if (!response.ok) {
-        throw new Error("Failed to fetch leave requests");
-      }
+      if (!response.ok) throw new Error("Failed to fetch leave requests");
       const data = await response.json();
       setLeaveRequests(data.data);
     } catch (error) {
@@ -92,14 +101,50 @@ function DashboardPage() {
     fetchLeaveRequests();
   }, [fetchLeaveBalance, fetchLeaveRequests]);
 
+  // Filter logic
+  const filteredRequests = (leaveRequests ?? []).filter((req) => {
+    if (filterStatus && req.status !== filterStatus) return false;
+    if (filterStartDate && req.start_date < filterStartDate) return false;
+    if (filterEndDate && req.end_date > filterEndDate) return false;
+    return true;
+  });
+
+  const handleClearFilter = () => {
+    setFilterStatus("");
+    setFilterStartDate("");
+    setFilterEndDate("");
+  };
+
   return (
     <>
       <main className="flex flex-col items-center justify-center p-24 bg-gray-100 min-h-screen">
         {/* user info */}
         <div className="mb-6 w-full max-w-5xl bg-white rounded-lg shadow-lg shadow-gray-400 p-5">
-          <h2 className="text-xl font-semibold text-gray-700 mb-4">
-            User Information
-          </h2>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold text-gray-700">
+              User Information
+            </h2>
+              <div className="relative">
+                <button className="p-2" onClick={() => setShowOptions((v) => !v)}>
+                  <SlOptionsVertical className="text-gray-500 hover:text-gray-700 cursor-pointer" />
+                </button>
+                {showOptions && (
+                  <div className="absolute right-0 mt-2 w-40 bg-white border rounded shadow-lg shadow-gray-300 z-10 overflow-hidden">
+                    {role === "manager" && (
+                      <button
+                        className="block w-full text-left px-4 py-2 text-gray-500 hover:text-blue-800 cursor-pointer hover:bg-gray-200 hover:text-blue-600"
+                        onClick={() => { setShowOptions(false); router.push("/request"); }}
+                      >
+                        Go to Request
+                      </button>
+                    )}
+                    <button className="block w-full text-left px-4 py-2 text-gray-500 cursor-pointer hover:bg-gray-200 hover:text-red-600">
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+          </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-gray-500">User Info</p>
@@ -123,10 +168,11 @@ function DashboardPage() {
             </div>
           </div>
         </div>
-        {/* table header */}
+
+        {/* table header + filter */}
         <div className="pl-5 pr-5 pt-5 w-full max-w-5xl bg-white rounded-t-lg shadow-lg shadow-gray-400">
-          <div className="flex justify-between mb-6 items-center p-3">
-            <h1 className="text-xl font-semibold text-gray-700 flex items-center">
+          <div className="flex justify-between mb-4 items-center p-3">
+            <h1 className="text-xl font-semibold text-gray-700">
               Leave Requests
             </h1>
             <button
@@ -137,6 +183,53 @@ function DashboardPage() {
               Request
             </button>
           </div>
+
+          {/* Filter bar */}
+          <div className="flex flex-wrap gap-3 px-3 pb-4 items-end">
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Status</label>
+              <select
+                className="border border-gray-300 rounded-md px-2 py-1.5 text-sm text-gray-700"
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+              >
+                <option value="">ทั้งหมด</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">
+                ตั้งแต่วันที่
+              </label>
+              <input
+                type="date"
+                className="border border-gray-300 rounded-md px-2 py-1.5 text-sm text-gray-700"
+                value={filterStartDate}
+                onChange={(e) => setFilterStartDate(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">
+                ถึงวันที่
+              </label>
+              <input
+                type="date"
+                className="border border-gray-300 rounded-md px-2 py-1.5 text-sm text-gray-700"
+                value={filterEndDate}
+                onChange={(e) => setFilterEndDate(e.target.value)}
+              />
+            </div>
+            <button
+              className="text-sm text-gray-400 hover:text-gray-600 cursor-pointer px-2 py-1.5 border border-gray-200 rounded-md"
+              onClick={handleClearFilter}
+            >
+              Clear
+            </button>
+          </div>
+
           <table className="min-w-full border border-gray-300 rounded-lg overflow-hidden text-base">
             <colgroup>
               <col style={{ width: "50px" }} />
@@ -178,6 +271,7 @@ function DashboardPage() {
             </thead>
           </table>
         </div>
+
         {/* table body */}
         <div className="pl-5 pr-5 pb-5 w-full max-w-5xl bg-white rounded-b-lg shadow-lg shadow-gray-400">
           <table className="min-w-full border border-gray-300 rounded-lg overflow-hidden text-base">
@@ -192,8 +286,8 @@ function DashboardPage() {
               <col style={{ width: "120px" }} />
             </colgroup>
             <tbody>
-              {(leaveRequests?.length ?? 0) > 0 ? (
-                (leaveRequests ?? []).map((request, index) => (
+              {filteredRequests.length > 0 ? (
+                filteredRequests.map((request, index) => (
                   <tr key={request.id} className="border-b border-gray-200">
                     <td className="py-3 px-2 text-center text-gray-500">
                       {index + 1}
@@ -202,7 +296,7 @@ function DashboardPage() {
                       {request.leave_type}
                     </td>
                     <td className="py-3 px-2 text-center text-gray-500">
-                      {request.start_date}{" "}
+                      {request.start_date}
                       {request.start_half_day_type === "morning" &&
                         " (Morning)"}
                       {request.start_half_day_type === "afternoon" &&
@@ -249,7 +343,7 @@ function DashboardPage() {
                         className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-700 cursor-pointer"
                         onClick={() => {
                           setViewReqModal(true);
-                          setSelectedRequest(request); // Set the selected request data
+                          setSelectedRequest(request);
                         }}
                       >
                         View
@@ -282,11 +376,11 @@ function DashboardPage() {
       <ViewReqModal
         open={viewReqModal}
         onClose={() => {
-          setViewReqModal(false)
+          setViewReqModal(false);
           fetchLeaveRequests();
           fetchLeaveBalance();
         }}
-        requestId={selectedRequest?.id || null} // Pass the selected request ID to the modal
+        requestId={selectedRequest?.id || null}
         fromDashboardPage={true}
       />
     </>
